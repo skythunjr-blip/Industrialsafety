@@ -372,7 +372,10 @@ const SafetyDB = {
     try {
       if (supabaseClient) {
         const { data, error } = await supabaseClient.from("corp_stats").select("*").order("id", { ascending: true });
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          localStorage.setItem("safety_corp_stats", JSON.stringify(data));
+          return data;
+        }
       }
     } catch (e) {
       console.warn("DB corp_stats 조회 실패:", e);
