@@ -345,7 +345,7 @@ function openInspectionModal(data = null) {
         <div>
           <label class="block font-semibold text-slate-700 mb-1">설치 위치</label>
           <input type="text" id="modal-insp-location" value="${isEdit ? escapeHtml(data.location || '') : ''}"
-            placeholder="예: 충주공장 1층 입출고장" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+            placeholder="예: 횡성 사업장 1층 입출하장" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">검사 기관</label>

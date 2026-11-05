@@ -86,7 +86,7 @@ const DEFAULT_INSPECTIONS = [
     id: 1,
     corp: "케이프라이드",
     equipment_name: "전동 지게차 (도요타 2.5톤)",
-    location: "충주공장 1층 입출고장",
+    location: "횡성 사업장 1층 입출하장",
     last_date: "2026-05-15",
     next_date: "2027-05-14",
     status: "정상(양호)",
@@ -97,7 +97,7 @@ const DEFAULT_INSPECTIONS = [
     id: 2,
     corp: "케이프라이드",
     equipment_name: "원료 이송용 수평 컨베이어 (N-1)",
-    location: "가공라인 2층",
+    location: "가공실(1층) 성형·배합 라인",
     last_date: "2024-03-10",
     next_date: "2026-03-09",
     status: "검사도래/서류점검",
@@ -108,7 +108,7 @@ const DEFAULT_INSPECTIONS = [
     id: 3,
     corp: "보담",
     equipment_name: "지하 폐수처리장 국소배기장치",
-    location: "안성공장 지하 1층",
+    location: "횡성 사업장 폐수처리장",
     last_date: "2025-11-20",
     next_date: "2027-11-19",
     status: "정상(양호)",
@@ -165,7 +165,7 @@ const DEFAULT_NOTICES = [
     author: "보건관리대행",
     date: "2026-10-18",
     is_pinned: false,
-    content: "소음 및 분진 유해요인 종사자 대상 2차 추적검사가 11월 둘째 주 충주의료원에서 진행됩니다. 해당 부서장은 공가 일정을 조율해 주시기 바랍니다."
+    content: "소음 및 분진 유해요인 종사자 대상 2차 추적검사가 11월 둘째 주 관내 원주의료원(검진센터)에서 진행됩니다. 해당 부서장은 공가 일정을 조율해 주시기 바랍니다."
   }
 ];
 
