@@ -484,3 +484,6 @@ const ISO45001_DATA = {
 };
 
 window.SAFETY_TIPS_DATA.isoData = ISO45001_DATA;
+PERIODIC_CHECKLISTS.iso = ISO45001_DATA.checklist;
+window.SAFETY_TIPS_DATA.periodicChecklists = PERIODIC_CHECKLISTS;
+

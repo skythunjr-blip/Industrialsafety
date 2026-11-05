@@ -372,13 +372,22 @@ function saveCheckedItems(arr) {
 
 function switchChecklistCycle(cycle) {
   currentChecklistCycle = cycle;
-  const tabs = ["daily", "weekly", "monthly", "quarterly", "yearly"];
+  const tabs = ["daily", "weekly", "monthly", "quarterly", "yearly", "iso"];
   tabs.forEach(c => {
     const btn = document.getElementById(`chk-tab-${c}`);
+    if (!btn) return;
     if (c === cycle) {
-      btn.className = "chk-tab px-3 py-1.5 rounded-lg text-sky-700 bg-white shadow-xs font-bold transition";
+      if (c === 'iso') {
+        btn.className = "chk-tab px-3 py-1.5 rounded-lg text-emerald-800 bg-white shadow-xs font-bold border border-emerald-300 transition ring-2 ring-emerald-500/20";
+      } else {
+        btn.className = "chk-tab px-3 py-1.5 rounded-lg text-sky-700 bg-white shadow-xs font-bold transition";
+      }
     } else {
-      btn.className = "chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+      if (c === 'iso') {
+        btn.className = "chk-tab px-3 py-1.5 rounded-lg text-emerald-700 bg-emerald-50/70 hover:bg-emerald-100 transition border border-emerald-200/70 font-semibold";
+      } else {
+        btn.className = "chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+      }
     }
   });
   renderPeriodicChecklist();
@@ -414,6 +423,12 @@ function resetChecklist() {
 }
 
 function handleCheckItem(id) {
+  if (id.startsWith("iso-chk-")) {
+    handleIsoCheckItem(id);
+    renderPeriodicChecklist();
+    return;
+  }
+
   const checked = getCheckedItems();
   const card = document.getElementById(`chk-card-${id}`);
 
@@ -422,7 +437,7 @@ function handleCheckItem(id) {
     const updated = checked.filter(item => item !== id);
     saveCheckedItems(updated);
     renderPeriodicChecklist();
-  renderIsoChecklist();
+    renderIsoChecklist();
   } else {
     // 체크 완료
     checked.push(id);
@@ -433,11 +448,11 @@ function handleCheckItem(id) {
       card.classList.add("fade-out");
       setTimeout(() => {
         renderPeriodicChecklist();
-  renderIsoChecklist();
+        renderIsoChecklist();
       }, 280);
     } else {
       renderPeriodicChecklist();
-  renderIsoChecklist();
+      renderIsoChecklist();
     }
   }
 }
@@ -447,8 +462,10 @@ function renderPeriodicChecklist() {
   const progressText = document.getElementById("checklist-progress-text");
   if (!container || !window.SAFETY_TIPS_DATA?.periodicChecklists) return;
 
+  const isIso = currentChecklistCycle === "iso";
   const list = window.SAFETY_TIPS_DATA.periodicChecklists[currentChecklistCycle] || [];
-  const checked = getCheckedItems();
+  const checked = isIso ? getIsoCheckedItems() : getCheckedItems();
+  const shouldHide = isIso ? hideCompletedIso : hideCompletedChecklist;
 
   const completedCount = list.filter(item => checked.includes(item.id)).length;
   const totalCount = list.length;
@@ -458,8 +475,8 @@ function renderPeriodicChecklist() {
     progressText.textContent = `진행도: ${completedCount}/${totalCount} (${percent}%)`;
   }
 
-  // 필터링: hideCompletedChecklist가 true면 완료된 항목 제외
-  const visibleList = hideCompletedChecklist
+  // 필터링
+  const visibleList = shouldHide
     ? list.filter(item => !checked.includes(item.id))
     : list;
 
@@ -471,7 +488,7 @@ function renderPeriodicChecklist() {
         </div>
         <h4 class="font-bold text-slate-800 text-sm">해당 주기의 모든 체크 항목을 완료했습니다! 🎉</h4>
         <p class="text-xs text-slate-500 mt-1">
-          ${hideCompletedChecklist ? '완료된 항목을 확인하려면 상단의 [완료 항목 숨김 중] 버튼을 클릭하세요.' : '수고하셨습니다. 안전한 사업장이 유지되고 있습니다.'}
+          ${shouldHide ? '완료된 항목을 확인하려면 상단의 [완료 항목 숨김 중] 버튼을 클릭하세요.' : '수고하셨습니다. 안전한 사업장이 유지되고 있습니다.'}
         </p>
       </div>
     `;
@@ -481,6 +498,7 @@ function renderPeriodicChecklist() {
 
   container.innerHTML = visibleList.map(item => {
     const isDone = checked.includes(item.id);
+    const corpBadge = item.corp ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${escapeHtml(item.corp)}</span>` : '';
     return `
       <div id="chk-card-${item.id}" class="p-4 rounded-xl border ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-xs hover:border-slate-300'} transition duration-200 space-y-2.5">
         <div class="flex items-start justify-between gap-3">
@@ -490,12 +508,12 @@ function renderPeriodicChecklist() {
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}">${escapeHtml(item.title)}</span>
-                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${escapeHtml(item.corp)}</span>
+                ${corpBadge}
               </div>
               <p class="text-xs text-slate-500 mt-1 leading-relaxed">${escapeHtml(item.desc)}</p>
             </div>
           </label>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 shrink-0">${escapeHtml(item.badge)}</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${isIso ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-sky-50 text-sky-700'} shrink-0">${escapeHtml(item.badge)}</span>
         </div>
 
         <!-- 💡 실무 꿀팁 블록 -->
