@@ -76,12 +76,19 @@
             <span class="sm:hidden">실무 팁</span>
           </button>
 
-          <!-- 3. 최신 사원연명부 인력 통계 버튼 (NEW!) -->
+          <!-- 3. 최신 사원연명부 인력 통계 버튼 -->
           <button onclick="openRosterModal()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-xs">
             <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
             <span class="hidden sm:inline">사원 인력 통계</span>
             <span class="sm:hidden">인력 통계</span>
           </button>
+
+          <!-- 4. ISO 45001 관리 전용 버튼 (NEW!) -->
+          <a href="#iso45001-section" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-xs">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span class="hidden sm:inline">ISO 45001 관리</span>
+            <span class="sm:hidden">ISO45001</span>
+          </a>
 
           <!-- 새로고침 버튼 -->
           <button onclick="refreshDashboard()" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="새로고침">
@@ -221,6 +228,84 @@
       <!-- 체크리스트 항목 렌더링 영역 -->
       <div class="p-5">
         <div id="checklist-items-container" class="space-y-3">
+          <!-- JS 동적 렌더링 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 🛡️ 신규: ISO 45001 안전보건경영시스템 전용 관리 섹션 -->
+    <!-- ============================================== -->
+    <section id="iso45001-section" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <!-- 헤더 -->
+      <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center font-bold">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-white tracking-tight">ISO 45001:2018 안전보건경영시스템 관리 센터</h2>
+              <span class="text-[10px] bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">인증 정상 유지</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">한국기업인증원(KOCI) · 유효기간: 2024.11.28 ~ 2027.11.27 · (주)케이프라이드 · (주)보담</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 text-xs">
+          <div class="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
+            <span id="iso-progress-text" class="font-bold text-emerald-400">진행도: 5/11 (45%)</span>
+          </div>
+          <button onclick="toggleIsoHideCompleted()" id="iso-toggle-completed-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition flex items-center gap-1">
+            <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+            <span id="iso-toggle-completed-text">완료 항목 숨김 중</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 요약 안내 및 조직 공백 경보 배너 -->
+      <div class="p-5 border-b border-slate-100 space-y-3 bg-slate-50/50">
+        <!-- 긴급 조직 공백 알림 -->
+        <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 text-xs text-rose-950">
+          <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+          <div class="flex-1">
+            <strong class="font-bold text-rose-900 block mb-0.5">🚨 당면 현장 관리조직 공백 긴급 조치 필요 (인수인계 핵심):</strong>
+            문서상 안전보건관리책임자(윤현구 부장) 및 관리감독자 2명(김지혜·김가현 과장) 퇴사로 인한 공석 상태입니다.  
+            현재 <strong>김희영 팀장(인적자원팀장, 실무 총괄) 및 김계원 과장(가공)</strong> 중심으로 대응 중이며,  
+            <strong>현장 반장/조장 2명을 신규 관리감독자로 선임(지정서 발급)</strong>하고 공장장을 관리책임자로 갱신 선임해야 심사 부적합을 피할 수 있습니다.
+          </div>
+        </div>
+
+        <!-- 3개 법인 인증 개요 카드 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 bg-white border border-slate-200 rounded-xl">
+            <div class="text-[11px] font-bold text-slate-500 mb-1">(주)케이프라이드</div>
+            <div class="font-bold text-slate-900 text-sm">2차 사후심사 수검 완료</div>
+            <div class="text-[11px] text-slate-500 mt-1">등록: kociO-2d45211 (유효: ~2027.11)</div>
+          </div>
+          <div class="p-3 bg-white border border-slate-200 rounded-xl">
+            <div class="text-[11px] font-bold text-slate-500 mb-1">(주)보담</div>
+            <div class="font-bold text-slate-900 text-sm">2차 사후심사 수검 완료</div>
+            <div class="text-[11px] text-slate-500 mt-1">등록: kociO-2d45213 (유효: ~2027.12)</div>
+          </div>
+          <div class="p-3 bg-slate-100 border border-slate-200 rounded-xl opacity-75">
+            <div class="text-[11px] font-bold text-slate-400 mb-1">백두대간영농조합법인</div>
+            <div class="font-bold text-slate-500 text-sm">심사 공식 제외 완료</div>
+            <div class="text-[11px] text-slate-400 mt-1">인력 이동으로 관리 종결</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ISO 45001 전용 체크리스트 항목 렌더링 영역 -->
+      <div class="p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
+            ISO 45001 심사 및 유지관리 체크리스트 (체크 완료 시 자동 숨김)
+          </h3>
+          <span class="text-[11px] text-slate-400">이미 완료된 5건은 자동 체크됨</span>
+        </div>
+        <div id="iso-checklist-container" class="space-y-3">
           <!-- JS 동적 렌더링 -->
         </div>
       </div>

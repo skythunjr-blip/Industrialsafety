@@ -96,6 +96,11 @@
           <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
           <span>3사 지표 통계</span>
         </button>
+        <button onclick="switchTab('iso45001')" id="tab-btn-iso45001" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span class="text-emerald-300">ISO 45001 관리</span>
+          <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500 text-slate-900 font-extrabold">인증</span>
+        </button>
         <button onclick="switchTab('tips_guide')" id="tab-btn-tips_guide" class="tab-btn flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white">
           <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
           <span class="text-amber-300">실무 팁 & 법령 변동점</span>
@@ -242,6 +247,73 @@
 
       <div id="corp-stats-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- JS 동적 렌더링 -->
+      </div>
+    </section>
+
+    <!-- ⭐ 신규: ISO 45001 안전보건경영시스템 전용 관리 탭 -->
+    <section id="tab-content-iso45001" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-slate-900 to-emerald-950 text-white p-6 rounded-2xl shadow-sm">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="p-2 bg-emerald-400 text-slate-950 font-bold rounded-xl">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </span>
+          <div>
+            <h2 class="text-lg font-bold">ISO 45001:2018 안전보건경영시스템 전용 관리</h2>
+            <p class="text-xs text-slate-300">인증 유지(2027.11까지 유효) · 2차 사후심사 지적사항 대응 및 현장 관리조직 공백 긴급 조치 센터</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 조직 공백 긴급 경보 -->
+      <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-950 flex items-start gap-3 shadow-xs">
+        <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+        <div class="flex-1">
+          <strong class="font-bold text-rose-900 text-sm block mb-1">🚨 관리조직 공백 긴급 조치 계획:</strong>
+          윤현구 부장(관리책임자) 및 김지혜·김가현 과장(관리감독자) 퇴사로 인한 공석 발생!  
+          생산 반장/조장 2명을 신규 관리감독자로 선임(지정서 발급)하고, 공장장을 관리책임자로 명의 갱신하여 위험성평가표 및 법정 서류에 반영해야 합니다. (실무 총괄 키맨: 인적자원팀 김희영 팀장)
+        </div>
+      </div>
+
+      <!-- 2사 인증 상태 및 규정 문서 안내 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
+          <h4 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="building-2" class="w-4 h-4 text-sky-600"></i> (주)케이프라이드 인증 상태
+          </h4>
+          <p class="text-slate-600">등록번호: <strong class="text-slate-800">kociO-2d45211</strong></p>
+          <p class="text-slate-600">유효기간: <strong class="text-emerald-700">2024.11.28 ~ 2027.11.27</strong> (3년 갱신)</p>
+          <p class="text-slate-600">최근 심사: 2026.10.28~29 (2차 사후심사 2.0 M/D 수검 완료)</p>
+        </div>
+
+        <div class="p-4 bg-white border border-slate-200 rounded-xl space-y-2">
+          <h4 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="building-2" class="w-4 h-4 text-purple-600"></i> (주)보담 인증 상태
+          </h4>
+          <p class="text-slate-600">등록번호: <strong class="text-slate-800">kociO-2d45213</strong></p>
+          <p class="text-slate-600">유효기간: <strong class="text-emerald-700">2024.12.02 ~ 2027.12.01</strong> (3년 갱신)</p>
+          <p class="text-slate-600">최근 심사: 2026.10.26~27 (2차 사후심사 1.5 M/D 수검 완료)</p>
+        </div>
+      </div>
+
+      <!-- ISO 45001 전용 체크리스트 관리 -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
+              ISO 45001 실무 체크리스트 (완료 시 숨김 처리)
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">이미 완료된 5건(최초인증, 1·2차 심사 등)은 기본 체크되어 있습니다.</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span id="admin-iso-progress" class="font-bold text-emerald-600">진행도: 5/11</span>
+            <button onclick="toggleAdminIsoHide()" id="admin-iso-hide-btn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-semibold">완료 항목 숨김 중</button>
+          </div>
+        </div>
+
+        <div id="admin-iso-checklist" class="space-y-3">
+          <!-- JS 동적 렌더링 -->
+        </div>
       </div>
     </section>
 

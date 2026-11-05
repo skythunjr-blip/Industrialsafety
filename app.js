@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadDashboardData();
   await loadRecentFiles();
   renderPeriodicChecklist();
+  renderIsoChecklist();
 
   // 30초마다 자동 새로고침
   setInterval(async () => {
@@ -51,6 +52,7 @@ async function loadDashboardData(isSilent = false) {
     renderNotices();
     renderChart();
     renderPeriodicChecklist();
+  renderIsoChecklist();
 
     lucide.createIcons();
     if (!isSilent) console.log("대시보드 데이터 갱신 완료 (케이프라이드 · 보담 2사 체계)");
@@ -380,6 +382,7 @@ function switchChecklistCycle(cycle) {
     }
   });
   renderPeriodicChecklist();
+  renderIsoChecklist();
 }
 
 function toggleShowCompleted() {
@@ -396,6 +399,7 @@ function toggleShowCompleted() {
   }
   
   renderPeriodicChecklist();
+  renderIsoChecklist();
   lucide.createIcons();
 }
 
@@ -406,6 +410,7 @@ function resetChecklist() {
   const remaining = checked.filter(id => !currentList.includes(id));
   saveCheckedItems(remaining);
   renderPeriodicChecklist();
+  renderIsoChecklist();
 }
 
 function handleCheckItem(id) {
@@ -417,6 +422,7 @@ function handleCheckItem(id) {
     const updated = checked.filter(item => item !== id);
     saveCheckedItems(updated);
     renderPeriodicChecklist();
+  renderIsoChecklist();
   } else {
     // 체크 완료
     checked.push(id);
@@ -427,9 +433,11 @@ function handleCheckItem(id) {
       card.classList.add("fade-out");
       setTimeout(() => {
         renderPeriodicChecklist();
+  renderIsoChecklist();
       }, 280);
     } else {
       renderPeriodicChecklist();
+  renderIsoChecklist();
     }
   }
 }
@@ -724,4 +732,139 @@ function openRosterModal() {
 
 function closeRosterModal() {
   document.getElementById("roster-modal").classList.add("hidden");
+}
+
+// ==============================================
+// 🛡️ ISO 45001 전용 체크리스트 제어 함수
+// ==============================================
+
+let hideCompletedIso = true;
+
+function getIsoCheckedItems() {
+  try {
+    const raw = localStorage.getItem("safety_iso_checked");
+    if (raw) return JSON.parse(raw);
+    
+    // 최초 실행 시: 이미 진행 완료된 5개 항목을 기본 체크 처리!
+    const defaultDone = ["iso-chk-1", "iso-chk-2", "iso-chk-3", "iso-chk-4", "iso-chk-5"];
+    localStorage.setItem("safety_iso_checked", JSON.stringify(defaultDone));
+    return defaultDone;
+  } catch (e) {
+    return ["iso-chk-1", "iso-chk-2", "iso-chk-3", "iso-chk-4", "iso-chk-5"];
+  }
+}
+
+function saveIsoCheckedItems(arr) {
+  localStorage.setItem("safety_iso_checked", JSON.stringify(arr));
+}
+
+function toggleIsoHideCompleted() {
+  hideCompletedIso = !hideCompletedIso;
+  const btnText = document.getElementById("iso-toggle-completed-text");
+  const btnIcon = document.querySelector("#iso-toggle-completed-btn i");
+  
+  if (hideCompletedIso) {
+    btnText.textContent = "완료 항목 숨김 중";
+    if (btnIcon) btnIcon.setAttribute("data-lucide", "eye-off");
+  } else {
+    btnText.textContent = "모든 항목 표시 중";
+    if (btnIcon) btnIcon.setAttribute("data-lucide", "eye");
+  }
+  
+  renderIsoChecklist();
+  lucide.createIcons();
+}
+
+function handleIsoCheckItem(id) {
+  const checked = getIsoCheckedItems();
+  const card = document.getElementById(`iso-card-${id}`);
+
+  if (checked.includes(id)) {
+    // 언체크
+    const updated = checked.filter(item => item !== id);
+    saveIsoCheckedItems(updated);
+    renderIsoChecklist();
+  } else {
+    // 체크 완료
+    checked.push(id);
+    saveIsoCheckedItems(checked);
+
+    if (hideCompletedIso && card) {
+      card.classList.add("fade-out");
+      setTimeout(() => {
+        renderIsoChecklist();
+      }, 280);
+    } else {
+      renderIsoChecklist();
+    }
+  }
+}
+
+function renderIsoChecklist() {
+  const container = document.getElementById("iso-checklist-container");
+  const progressText = document.getElementById("iso-progress-text");
+  if (!container || !window.SAFETY_TIPS_DATA?.isoData) return;
+
+  const list = window.SAFETY_TIPS_DATA.isoData.checklists || [];
+  const checked = getIsoCheckedItems();
+
+  const completedCount = list.filter(item => checked.includes(item.id)).length;
+  const totalCount = list.length;
+  const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  if (progressText) {
+    progressText.textContent = `진행도: ${completedCount}/${totalCount} (${percent}%)`;
+  }
+
+  const visibleList = hideCompletedIso
+    ? list.filter(item => !checked.includes(item.id))
+    : list;
+
+  if (visibleList.length === 0) {
+    container.innerHTML = `
+      <div class="py-10 text-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2 font-bold">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <h4 class="font-bold text-slate-800 text-sm">ISO 45001의 모든 점검 및 심사 항목이 완료되었습니다! 🎉</h4>
+        <p class="text-xs text-slate-500 mt-1">
+          ${hideCompletedIso ? '완료된 항목(기존 심사 이력 등)을 보려면 [완료 항목 숨김 중] 버튼을 클릭하세요.' : '수고하셨습니다. 안전보건경영시스템이 완벽하게 유지 관리되고 있습니다.'}
+        </p>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = visibleList.map(item => {
+    const isDone = checked.includes(item.id);
+    return `
+      <div id="iso-card-${item.id}" class="p-4 rounded-xl border ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-xs hover:border-slate-300'} transition duration-200 space-y-2.5">
+        <div class="flex items-start justify-between gap-3">
+          <label class="flex items-start gap-3 cursor-pointer select-none flex-1">
+            <input type="checkbox" onchange="handleIsoCheckItem('${item.id}')" ${isDone ? 'checked' : ''}
+              class="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 transition cursor-pointer">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}">${escapeHtml(item.title)}</span>
+                ${isDone ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">완료</span>' : ''}
+              </div>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">${escapeHtml(item.desc)}</p>
+            </div>
+          </label>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${item.badge.includes('긴급') ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700'} shrink-0">
+            ${escapeHtml(item.badge)}
+          </span>
+        </div>
+
+        <!-- 💡 실무 꿀팁 블록 -->
+        <div class="p-2.5 bg-emerald-50/70 border border-emerald-200/80 rounded-lg text-xs text-emerald-950 flex items-start gap-2">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5"></i>
+          <span class="text-[11px] leading-relaxed">${escapeHtml(item.tip)}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  lucide.createIcons();
 }

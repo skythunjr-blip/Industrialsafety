@@ -106,7 +106,7 @@ function renderHeaderInfo() {
 // 탭 전환
 function switchTab(tabId) {
   currentTab = tabId;
-  const tabs = ["alerts", "inspections", "notices", "corp_stats", "tips_guide", "site_config", "database"];
+  const tabs = ["alerts", "inspections", "notices", "corp_stats", "iso45001", "tips_guide", "site_config", "database"];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`tab-btn-${t}`);
@@ -123,6 +123,8 @@ function switchTab(tabId) {
 
   if (tabId === "tips_guide") {
     renderTipsGuideTab();
+  } else if (tabId === "iso45001") {
+    renderIsoAdminTab();
   }
 
   lucide.createIcons();
@@ -824,6 +826,91 @@ function renderTipsGuideTab() {
       </div>
     `).join("");
   }
+
+  lucide.createIcons();
+}
+
+// ==========================================
+// 8. ISO 45001 전용 탭 렌더링 (Admin)
+// ==========================================
+
+let adminHideIsoDone = true;
+
+function getAdminIsoChecked() {
+  try {
+    const raw = localStorage.getItem("safety_iso_checked");
+    if (raw) return JSON.parse(raw);
+    const defaultDone = ["iso-chk-1", "iso-chk-2", "iso-chk-3", "iso-chk-4", "iso-chk-5"];
+    localStorage.setItem("safety_iso_checked", JSON.stringify(defaultDone));
+    return defaultDone;
+  } catch (e) {
+    return ["iso-chk-1", "iso-chk-2", "iso-chk-3", "iso-chk-4", "iso-chk-5"];
+  }
+}
+
+function toggleAdminIsoHide() {
+  adminHideIsoDone = !adminHideIsoDone;
+  document.getElementById("admin-iso-hide-btn").textContent = adminHideIsoDone ? "완료 항목 숨김 중" : "모든 항목 표시 중";
+  renderIsoAdminTab();
+}
+
+function handleAdminIsoCheck(id) {
+  let checked = getAdminIsoChecked();
+  if (checked.includes(id)) {
+    checked = checked.filter(i => i !== id);
+  } else {
+    checked.push(id);
+  }
+  localStorage.setItem("safety_iso_checked", JSON.stringify(checked));
+  renderIsoAdminTab();
+}
+
+function renderIsoAdminTab() {
+  const container = document.getElementById("admin-iso-checklist");
+  const progress = document.getElementById("admin-iso-progress");
+  if (!container || !window.SAFETY_TIPS_DATA?.isoData) return;
+
+  const list = window.SAFETY_TIPS_DATA.isoData.checklists || [];
+  const checked = getAdminIsoChecked();
+
+  const doneCount = list.filter(i => checked.includes(i.id)).length;
+  progress.textContent = `진행도: ${doneCount}/${list.length} (${Math.round((doneCount / list.length) * 100)}%)`;
+
+  const visible = adminHideIsoDone
+    ? list.filter(i => !checked.includes(i.id))
+    : list;
+
+  if (visible.length === 0) {
+    container.innerHTML = `
+      <div class="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+        모든 ISO 45001 점검 항목이 완료되었습니다! 🎉
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = visible.map(item => {
+    const isDone = checked.includes(item.id);
+    return `
+      <div class="p-3.5 rounded-xl border ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-xs'} flex items-start justify-between gap-3 text-xs">
+        <label class="flex items-start gap-2.5 cursor-pointer flex-1 select-none">
+          <input type="checkbox" onchange="handleAdminIsoCheck('${item.id}')" ${isDone ? 'checked' : ''}
+            class="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}">${escapeHtml(item.title)}</span>
+              ${isDone ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">완료</span>' : ''}
+            </div>
+            <p class="text-slate-500 text-[11px] mt-0.5 leading-relaxed">${escapeHtml(item.desc)}</p>
+            <p class="text-emerald-800 text-[11px] mt-1 bg-emerald-50/70 p-1.5 rounded">${escapeHtml(item.tip)}</p>
+          </div>
+        </label>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${item.badge.includes('긴급') ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700'} shrink-0">
+          ${escapeHtml(item.badge)}
+        </span>
+      </div>
+    `;
+  }).join("");
 
   lucide.createIcons();
 }
