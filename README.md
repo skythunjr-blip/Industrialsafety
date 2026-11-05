@@ -25,3 +25,5 @@
 - **Frontend**: HTML5, Tailwind CSS, Vanilla JavaScript, Chart.js, Lucide Icons
 - **Backend / Database**: Supabase (PostgreSQL, Row Level Security, Realtime)
 - **Local Server**: Python 3 HTTP Server (`run_dashboard.py`)
+
+<!-- Last synced: 2026-11-05 17:00 KST -->
