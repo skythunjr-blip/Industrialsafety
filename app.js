@@ -680,3 +680,48 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+// ==============================================
+// 사원연명부 인력 통계 모달 제어 함수
+// ==============================================
+
+function openRosterModal() {
+  const kprideContainer = document.getElementById("roster-kpride-list");
+  const bodamContainer = document.getElementById("roster-bodam-list");
+  if (!window.SAFETY_TIPS_DATA?.rosterStats) return;
+
+  const stats = window.SAFETY_TIPS_DATA.rosterStats;
+
+  // 1. 케이프라이드 부서별 렌더링
+  if (kprideContainer) {
+    kprideContainer.innerHTML = stats.kpride.departments.map(d => `
+      <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
+        <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sky-700 font-mono">${d.count}명</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  // 2. 보담 부서별 렌더링
+  if (bodamContainer) {
+    bodamContainer.innerHTML = stats.bodam.departments.map(d => `
+      <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
+        <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-purple-700 font-mono">${d.count}명</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("roster-modal").classList.remove("hidden");
+  lucide.createIcons();
+}
+
+function closeRosterModal() {
+  document.getElementById("roster-modal").classList.add("hidden");
+}

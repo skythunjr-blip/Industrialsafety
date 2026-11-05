@@ -173,29 +173,20 @@ const DEFAULT_CORP_STATS = [
   {
     id: 1,
     corp_name: "케이프라이드",
-    worker_count: 142,
+    worker_count: 225,
     zero_accident_days: 418,
     risk_assessment_rate: 94,
     health_check_rate: 98,
-    status_summary: "정상 가동 (작업환경측정 소음관리 중)"
+    status_summary: "정상 가동 (최신 사원연명부 기준: 정규직 133명 / 계약직 91명)"
   },
   {
     id: 2,
     corp_name: "보담",
-    worker_count: 85,
+    worker_count: 99,
     zero_accident_days: 620,
     risk_assessment_rate: 91,
     health_check_rate: 100,
-    status_summary: "우수 사업장 (밀폐공간 특별점검 완료)"
-  },
-  {
-    id: 3,
-    corp_name: "케이펙",
-    worker_count: 67,
-    zero_accident_days: 285,
-    risk_assessment_rate: 88,
-    health_check_rate: 96,
-    status_summary: "정상 가동 (지게차 운행경로 보완 조치)"
+    status_summary: "우수 사업장 (최신 사원연명부 기준: 남 34명 / 여 65명)"
   }
 ];
 

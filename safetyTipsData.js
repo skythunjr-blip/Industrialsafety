@@ -339,3 +339,43 @@ const PERIODIC_CHECKLISTS = {
 };
 
 window.SAFETY_TIPS_DATA.periodicChecklists = PERIODIC_CHECKLISTS;
+
+// ==============================================
+// 5. 최신 사원연명부 기반 안전보건 인력 현황 (개인정보 비식별 통계)
+// ==============================================
+const ROSTER_STATS = {
+  baseDate: "2026-10 최신본",
+  totalWorkers: 324,
+  kpride: {
+    corpName: "(주)케이프라이드",
+    total: 225,
+    gender: { male: 102, female: 123 },
+    employment: { regular: 133, contract: 91, other: 1 },
+    departments: [
+      { dept: "M본부 (영업/매장/유통)", count: 104, riskLevel: "보통" },
+      { dept: "가공생산과 (제조)", count: 27, riskLevel: "주의 (소음/회전체)" },
+      { dept: "식육생산과 (제조)", count: 26, riskLevel: "주의 (육절/골절기)" },
+      { dept: "SCM팀 (물류/상하차)", count: 25, riskLevel: "주의 (지게차/중량물)" },
+      { dept: "경영자원본부 (인적자원/안전)", count: 22, riskLevel: "일반" },
+      { dept: "가열생산과 (제조)", count: 10, riskLevel: "주의 (고열/화상)" },
+      { dept: "자금회계팀", count: 5, riskLevel: "일반" },
+      { dept: "품질관리팀 (실험/검사)", count: 4, riskLevel: "보통 (화학/검사)" },
+      { dept: "상품생산과", count: 1, riskLevel: "보통" },
+      { dept: "대표이사(CEO)", count: 1, riskLevel: "총괄" }
+    ]
+  },
+  bodam: {
+    corpName: "(주)보담",
+    total: 99,
+    gender: { male: 34, female: 65 },
+    departments: [
+      { dept: "생산부 (신선생산/가공)", count: 58, riskLevel: "주의 (기계설비)" },
+      { dept: "식육사업본부", count: 18, riskLevel: "주의 (식육가공)" },
+      { dept: "SCM/물류팀", count: 12, riskLevel: "주의 (지게차 운행)" },
+      { dept: "관리/회계/계열화", count: 10, riskLevel: "일반" },
+      { dept: "대표이사(CEO)", count: 1, riskLevel: "총괄" }
+    ]
+  }
+};
+
+window.SAFETY_TIPS_DATA.rosterStats = ROSTER_STATS;
