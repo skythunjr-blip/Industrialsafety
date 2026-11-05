@@ -868,3 +868,69 @@ function renderIsoChecklist() {
 
   lucide.createIcons();
 }
+
+// ==============================================
+// ISO 45001 모달 및 스크롤 함수
+// ==============================================
+
+function scrollToIsoSection() {
+  const sec = document.getElementById("iso45001-section");
+  if (sec) {
+    sec.scrollIntoView({ behavior: "smooth" });
+    sec.classList.add("ring-4", "ring-emerald-400", "transition", "duration-500");
+    setTimeout(() => {
+      sec.classList.remove("ring-4", "ring-emerald-400");
+    }, 1500);
+  }
+}
+
+function openIsoModal() {
+  const modalContainer = document.getElementById("iso-modal-checklist-container");
+  const modalProgress = document.getElementById("iso-modal-progress");
+  if (!modalContainer || !window.SAFETY_TIPS_DATA?.isoData) return;
+
+  const list = window.SAFETY_TIPS_DATA.isoData.checklists || [];
+  const checked = getIsoCheckedItems();
+
+  const doneCount = list.filter(i => checked.includes(i.id)).length;
+  modalProgress.textContent = `진행도: ${doneCount}/${list.length} (${Math.round((doneCount / list.length) * 100)}%)`;
+
+  modalContainer.innerHTML = list.map(item => {
+    const isDone = checked.includes(item.id);
+    return `
+      <div class="p-3 rounded-xl border ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-xs'} text-xs space-y-1.5">
+        <div class="flex items-start justify-between gap-2">
+          <label class="flex items-start gap-2 cursor-pointer select-none flex-1">
+            <input type="checkbox" onchange="handleModalIsoCheck('${item.id}')" ${isDone ? 'checked' : ''}
+              class="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}">${escapeHtml(item.title)}</span>
+                ${isDone ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">완료</span>' : ''}
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(item.desc)}</p>
+            </div>
+          </label>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${item.badge.includes('긴급') ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700'} shrink-0">
+            ${escapeHtml(item.badge)}
+          </span>
+        </div>
+        <div class="p-2 bg-emerald-50/70 border border-emerald-100 rounded text-[11px] text-emerald-950">
+          ${escapeHtml(item.tip)}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("iso-detail-modal").classList.remove("hidden");
+  lucide.createIcons();
+}
+
+function handleModalIsoCheck(id) {
+  handleIsoCheckItem(id);
+  openIsoModal(); // 모달 내 목록 다시 그리기
+}
+
+function closeIsoModal() {
+  document.getElementById("iso-detail-modal").classList.add("hidden");
+}

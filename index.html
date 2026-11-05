@@ -83,12 +83,11 @@
             <span class="sm:hidden">인력 통계</span>
           </button>
 
-          <!-- 4. ISO 45001 관리 전용 버튼 (NEW!) -->
-          <a href="#iso45001-section" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-xs">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-            <span class="hidden sm:inline">ISO 45001 관리</span>
-            <span class="sm:hidden">ISO45001</span>
-          </a>
+          <!-- 4. ISO 45001 관리 전용 팝업 버튼 (NEW!) -->
+          <button onclick="openIsoModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+            <span>ISO 45001</span>
+          </button>
 
           <!-- 새로고침 버튼 -->
           <button onclick="refreshDashboard()" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="새로고침">
@@ -108,6 +107,10 @@
         <button onclick="filterCorp('ALL')" id="filter-btn-ALL" class="corp-tab px-3 py-1.5 rounded-lg text-sky-700 bg-sky-50 font-bold transition">전체 (케이프라이드 · 보담 통합)</button>
         <button onclick="filterCorp('케이프라이드')" id="filter-btn-케이프라이드" class="corp-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">(주)케이프라이드</button>
         <button onclick="filterCorp('보담')" id="filter-btn-보담" class="corp-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">(주)보담</button>
+        <button onclick="scrollToIsoSection()" class="px-3 py-1.5 rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold transition flex items-center gap-1 border border-emerald-200">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>🛡️ ISO 45001 전용 센터</span>
+        </button>
       </div>
     </div>
   </header>
@@ -594,6 +597,70 @@
 
       <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
         <button onclick="closeRosterModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISO 45001 전용 팝업 모달 -->
+  <div id="iso-detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">ISO 45001:2018 안전보건경영시스템 종합 현황</h3>
+            <p class="text-xs text-slate-500">한국기업인증원(KOCI) · (주)케이프라이드 · (주)보담 (유효기간: ~2027.11)</p>
+          </div>
+        </div>
+        <button onclick="closeIsoModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- 조직 공백 긴급 경보 -->
+      <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl mb-4 text-xs text-rose-950 flex items-start gap-2.5">
+        <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+        <div>
+          <strong class="font-bold text-rose-900 block mb-0.5">🚨 현장 관리조직 공백 긴급 조치 사항:</strong>
+          안전보건관리책임자(윤현구 부장) 및 관리감독자 2명(김지혜·김가현 과장) 퇴사 공석 발생!  
+          생산 반장/조장 2명을 신규 관리감독자로 선임(지정서 발급 및 연 16시간 교육)하고, 공장장을 관리책임자로 명의 갱신해야 심사 부적합을 피할 수 있습니다. (실무 총괄: 김희영 인적자원팀장)
+        </div>
+      </div>
+
+      <!-- 2사 인증 상태 요약 -->
+      <div class="grid grid-cols-2 gap-3 mb-4 text-xs">
+        <div class="p-3 bg-sky-50/70 border border-sky-100 rounded-xl">
+          <strong class="text-slate-900 font-bold block mb-1">(주)케이프라이드</strong>
+          <span class="text-slate-600">등록: kociO-2d45211</span><br>
+          <span class="text-emerald-700 font-bold">유효기간: 2024.11.28 ~ 2027.11.27</span><br>
+          <span class="text-slate-500 text-[11px]">2026.10.28~29 2차 사후심사 완료</span>
+        </div>
+        <div class="p-3 bg-purple-50/70 border border-purple-100 rounded-xl">
+          <strong class="text-slate-900 font-bold block mb-1">(주)보담</strong>
+          <span class="text-slate-600">등록: kociO-2d45213</span><br>
+          <span class="text-emerald-700 font-bold">유효기간: 2024.12.02 ~ 2027.12.01</span><br>
+          <span class="text-slate-500 text-[11px]">2026.10.26~27 2차 사후심사 완료</span>
+        </div>
+      </div>
+
+      <!-- 모달 내 체크리스트 영역 -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
+            ISO 45001 심사 및 유지관리 체크리스트
+          </h4>
+          <span class="text-[11px] font-bold text-emerald-700" id="iso-modal-progress">진행도: 5/11</span>
+        </div>
+        <div id="iso-modal-checklist-container" class="space-y-2.5">
+          <!-- JS 동적 렌더링 -->
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeIsoModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">닫기</button>
       </div>
     </div>
   </div>
