@@ -161,7 +161,27 @@ function renderAlerts() {
     info: "bg-sky-100 text-sky-700 border-sky-200"
   };
 
-  container.innerHTML = filtered.map(a => `
+  const statusBadge = {
+    '조치필요': 'bg-rose-50 text-rose-700 border-rose-200',
+    '진행중': 'bg-blue-50 text-blue-700 border-blue-200',
+    '대기': 'bg-slate-100 text-slate-700 border-slate-200',
+    '예정': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    '완료': 'bg-emerald-100 text-emerald-800 border-emerald-300'
+  };
+
+  const defaultGuides = {
+    1: "대행기관(대한안전관리본부)에 연락하여 2026년 계약 자동연장 확인 공문을 수령하고, 월별 방문기술지도 일지 바인더 편철을 확인하세요.",
+    2: "측정기관(건강한일터)에 연락하여 12월 셋째 주 측정일을 사전 예약하고, 당일 패티가공실 등 대상 공정이 정상 가동되도록 생산팀과 일정을 맞추세요.",
+    3: "안전보건공단 안전검사 포털(kosa.kosha.or.kr)에서 합격필증을 재발급받아 컨베이어 모터 외함에 부착하고 사본을 검사철에 보관하세요.",
+    4: "회의 7일 전(11.18까지) 노사 위원들에게 일시·장소를 사전 공지하고, 당일 회의록(동절기 한파 방한용품 및 난방설비 점검 안건) 양식을 준비하세요."
+  };
+
+  container.innerHTML = filtered.map(a => {
+    const howToText = (a.action_text && a.action_text.length > 8)
+      ? a.action_text
+      : (defaultGuides[a.id] || '');
+
+    return `
     <div class="p-5 rounded-2xl border ${borderClass[a.level] || borderClass.info} shadow-xs flex flex-col justify-between hover:shadow-md transition">
       <div>
         <div class="flex items-center justify-between gap-2 mb-2">
@@ -172,22 +192,31 @@ function renderAlerts() {
         </div>
         <div class="text-[11px] font-semibold text-slate-500 mb-1">${escapeHtml(a.corp)}</div>
         <h3 class="font-bold text-xs sm:text-sm text-slate-900 mb-2 leading-snug">${escapeHtml(a.title)}</h3>
-        <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed mb-4">${escapeHtml(a.desc || '')}</p>
+        <p class="text-xs text-slate-600 leading-relaxed mb-3">${escapeHtml(a.desc || '')}</p>
+
+        <!-- 💡 구체적인 실무 조치 방법 블록 -->
+        ${howToText ? `
+          <div class="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl text-xs text-amber-950 flex items-start gap-2.5 shadow-2xs mt-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="font-bold text-[11px] text-amber-900 block mb-0.5">💡 구체적 조치 방법 (Action Guide):</strong>
+              <p class="text-[11px] leading-relaxed text-amber-900/90">${escapeHtml(howToText)}</p>
+            </div>
+          </div>
+        ` : ''}
       </div>
 
-      <div class="pt-3 border-t border-slate-100/80 flex items-center justify-between text-xs">
+      <div class="pt-3 mt-3 border-t border-slate-100/80 flex items-center justify-between text-xs">
         <span class="text-[11px] text-slate-400 font-medium">상태: <strong class="text-slate-700">${escapeHtml(a.status || '대기')}</strong></span>
-        <button onclick="showAlertDetail('${escapeHtml(a.title)}', '${escapeHtml(a.desc || '')}')" class="text-xs text-sky-600 hover:text-sky-800 font-bold flex items-center gap-1">
-          <span>${escapeHtml(a.action_text || '확인')}</span>
-          <i data-lucide="arrow-right" class="w-3 h-3"></i>
-        </button>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${statusBadge[a.status] || 'bg-slate-100 text-slate-600 border-slate-200'}">
+          ${escapeHtml(a.status || '대기')}
+        </span>
       </div>
     </div>
-  `).join("");
-}
+    `;
+  }).join("");
 
-function showAlertDetail(title, desc) {
-  alert(`[안내 상세]\n\n제목: ${title}\n\n내용:\n${desc}`);
+  lucide.createIcons();
 }
 
 // 2사 법인 카드 렌더링 (케이펙 제외)

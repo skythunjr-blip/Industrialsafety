@@ -153,6 +153,7 @@ function renderAlerts() {
       <td class="py-3 px-4">
         <div class="font-bold text-slate-900">${escapeHtml(a.title)}</div>
         <div class="text-[11px] text-slate-500 mt-0.5 leading-snug">${escapeHtml(a.desc || '')}</div>
+        ${a.action_text ? `<div class="text-[10px] text-amber-850 bg-amber-50 rounded px-2 py-1 mt-1.5 border border-amber-200/80 font-medium">💡 <strong>조치 방법:</strong> ${escapeHtml(a.action_text)}</div>` : ''}
       </td>
       <td class="py-3 px-4 font-medium text-slate-700 font-mono">${escapeHtml(a.dday || '-')}</td>
       <td class="py-3 px-4">
@@ -223,9 +224,9 @@ function openAlertModal(alertData = null) {
       </div>
 
       <div>
-        <label class="block font-semibold text-slate-700 mb-1">버튼 텍스트</label>
-        <input type="text" id="modal-alert-action" value="${isEdit ? escapeHtml(alertData.action_text || '') : '상세보기'}"
-          placeholder="예: 계약서 확인, 점검일정 점검" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+        <label class="block font-semibold text-slate-700 mb-1">💡 구체적 실무 조치 방법 (Action Guide)</label>
+        <textarea id="modal-alert-action" rows="2" class="w-full p-2 border border-slate-300 rounded-lg outline-none"
+          placeholder="예: 대행기관에 연락하여 계약 연장 공문 수령 및 바인더 편철 확인">${isEdit ? escapeHtml(alertData.action_text || '') : ''}</textarea>
       </div>
 
       <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
