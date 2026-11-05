@@ -122,12 +122,15 @@ function renderKPIs() {
     : allCorpStats.filter(s => s.corp_name === selectedCorp);
 
   const totalWorkers = filteredStats.reduce((sum, s) => sum + (s.worker_count || 0), 0);
-  const maxZeroAccident = filteredStats.reduce((max, s) => Math.max(max, s.zero_accident_days || 0), 0);
 
-  document.getElementById("kpi-total-workers").textContent = totalWorkers.toLocaleString();
-  document.getElementById("kpi-zero-accident").textContent = maxZeroAccident.toLocaleString();
-  document.getElementById("kpi-alerts-count").textContent = filteredAlerts.length;
-  document.getElementById("kpi-inspections-count").textContent = filteredInspections.length;
+  const elTotalWorkers = document.getElementById("kpi-total-workers");
+  if (elTotalWorkers) elTotalWorkers.textContent = totalWorkers.toLocaleString();
+
+  const elAlerts = document.getElementById("kpi-alerts-count");
+  if (elAlerts) elAlerts.textContent = filteredAlerts.length;
+
+  const elInspections = document.getElementById("kpi-inspections-count");
+  if (elInspections) elInspections.textContent = filteredInspections.length;
 }
 
 // 긴급 D-Day 및 알림 카드 렌더링
@@ -207,8 +210,8 @@ function renderCorpCards() {
           <span class="font-bold text-slate-800">${stat.worker_count}명</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-slate-500">무재해 일수</span>
-          <span class="font-bold text-emerald-600">${stat.zero_accident_days}일</span>
+          <span class="text-slate-500">건강검진 수검률</span>
+          <span class="font-bold text-indigo-600">${stat.health_check_rate || 98}%</span>
         </div>
         <div>
           <div class="flex items-center justify-between text-[11px] mb-1">

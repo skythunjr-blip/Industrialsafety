@@ -588,15 +588,6 @@ function renderCorpStats() {
         </div>
 
         <div>
-          <label class="block text-slate-500 font-medium mb-1">연속 무재해 일수</label>
-          <div class="flex items-center gap-2">
-            <input type="number" id="stat-zero-${stat.id}" value="${stat.zero_accident_days}"
-              class="w-full p-2 border border-slate-300 rounded-lg font-bold text-emerald-600 outline-none">
-            <span class="text-slate-500 font-bold">일</span>
-          </div>
-        </div>
-
-        <div>
           <label class="block text-slate-500 font-medium mb-1">위험성평가 개선 이행률</label>
           <div class="flex items-center gap-2">
             <input type="number" min="0" max="100" id="stat-risk-${stat.id}" value="${stat.risk_assessment_rate}"
@@ -635,7 +626,8 @@ async function saveSingleCorpStat(id) {
   if (!stat) return;
 
   stat.worker_count = parseInt(document.getElementById(`stat-worker-${id}`).value, 10) || 0;
-  stat.zero_accident_days = parseInt(document.getElementById(`stat-zero-${id}`).value, 10) || 0;
+  const zeroEl = document.getElementById(`stat-zero-${id}`);
+  if (zeroEl) stat.zero_accident_days = parseInt(zeroEl.value, 10) || 0;
   stat.risk_assessment_rate = parseInt(document.getElementById(`stat-risk-${id}`).value, 10) || 0;
   stat.health_check_rate = parseInt(document.getElementById(`stat-health-${id}`).value, 10) || 0;
   stat.status_summary = document.getElementById(`stat-summary-${id}`).value.trim();
