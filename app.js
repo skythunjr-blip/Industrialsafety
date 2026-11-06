@@ -1909,8 +1909,8 @@ function renderSystemDocs() {
           </div>
 
           <!-- 제목 & 조항 매핑 -->
-          <div>
-            <h4 class="font-bold text-sm text-slate-900 leading-snug">${escapeHtml(doc.title)}</h4>
+          <div class="cursor-pointer group" onclick="openSysDocDetailModal('${escapeHtml(doc.code)}')">
+            <h4 class="font-bold text-sm text-slate-900 group-hover:text-emerald-700 leading-snug transition">${escapeHtml(doc.title)}</h4>
             <span class="text-[11px] font-semibold text-emerald-700 font-mono mt-0.5 inline-block">${escapeHtml(doc.clause)}</span>
           </div>
 
@@ -1935,10 +1935,10 @@ function renderSystemDocs() {
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
           <span class="text-slate-400 text-[10px]">${isP ? '표준 절차서' : '현장 실무지침'}</span>
-          <span class="font-semibold text-emerald-600 flex items-center gap-1">
-            <span>체계 규정</span>
-            <i data-lucide="chevron-right" class="w-3 h-3"></i>
-          </span>
+          <button onclick="openSysDocDetailModal('${escapeHtml(doc.code)}')" class="font-bold text-emerald-600 hover:text-emerald-800 hover:underline flex items-center gap-1 transition">
+            <span>상세 가이드 보기</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
         </div>
       </div>
     `;
@@ -1947,3 +1947,153 @@ function renderSystemDocs() {
   lucide.createIcons();
 }
 window.renderSystemDocs = renderSystemDocs;
+
+// ==============================================
+// 10. 규정·지침서 상세 안내 모달 제어
+// ==============================================
+function openSysDocDetailModal(docCode) {
+  const modal = document.getElementById("sysdoc-detail-modal");
+  const codeEl = document.getElementById("modal-sysdoc-code");
+  const titleEl = document.getElementById("modal-sysdoc-title");
+  const clauseEl = document.getElementById("modal-sysdoc-clause");
+  const bodyEl = document.getElementById("modal-sysdoc-body");
+  if (!modal || !bodyEl) return;
+
+  const allDocs = window.SAFETY_TIPS_DATA?.systemDocs || [];
+  const doc = allDocs.find(d => d.code === docCode);
+  if (!doc) return;
+
+  const isP = doc.kind === '절차서';
+  const subForms = doc.subForms || [];
+  const isHidden = doc.isHidden;
+
+  if (codeEl) {
+    codeEl.textContent = doc.code;
+    codeEl.className = isP 
+      ? "font-mono font-extrabold text-xs px-2.5 py-1 rounded-md bg-sky-100 text-sky-800 border border-sky-200"
+      : "font-mono font-extrabold text-xs px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200";
+  }
+  if (titleEl) titleEl.textContent = doc.title;
+  if (clauseEl) clauseEl.textContent = `${doc.clause} | ${doc.kind}`;
+
+  bodyEl.innerHTML = `
+    <!-- 상태 배너 -->
+    <div class="p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
+      isHidden ? 'bg-amber-50/80 border-amber-300 text-amber-950' : 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
+    }">
+      <div class="flex items-center gap-2">
+        <i data-lucide="${isHidden ? 'lock' : 'check-circle-2'}" class="w-4 h-4 ${isHidden ? 'text-amber-600' : 'text-emerald-600'} shrink-0"></i>
+        <div class="text-[11px]">
+          <strong>${isHidden ? '정리본 보관본 (사내 미배포 규정)' : '사내 정식 배포 및 시행 중인 유효 규정'}</strong>
+          <p class="text-[10px] text-slate-600 mt-0.5">${isHidden ? '정리본 내 보관 중이며, 사업장 폴더에는 미배포된 체계 항목입니다.' : '케이프라이드 및 보담 사업장에 배포되어 실무 이행 중인 규정입니다.'}</p>
+        </div>
+      </div>
+      <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
+        isHidden ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+      }">${isHidden ? '미배포' : '배포완료'}</span>
+    </div>
+
+    <!-- 규정 개요 및 실무 프로세스 테이블 -->
+    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2.5">
+      <h4 class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+        <i data-lucide="file-text" class="w-4 h-4 text-slate-700"></i>
+        <span>규정 개요 및 실무 운영 기준</span>
+      </h4>
+      <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(doc.description)}</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-200/80 text-[11px]">
+        <div class="p-2.5 bg-white rounded-lg border border-slate-200/80 space-y-0.5 shadow-2xs">
+          <span class="text-slate-400 font-medium text-[10px] block">점검 및 작성 주기</span>
+          <strong class="text-slate-900 font-bold font-mono">${escapeHtml(doc.cycle || '상시')}</strong>
+        </div>
+        <div class="p-2.5 bg-white rounded-lg border border-slate-200/80 space-y-0.5 shadow-2xs">
+          <span class="text-slate-400 font-medium text-[10px] block">최종 결재 / 승인권자</span>
+          <strong class="text-slate-900 font-bold">${escapeHtml(doc.approver || '안전보건관리책임자')}</strong>
+        </div>
+        <div class="p-2.5 bg-white rounded-lg border border-slate-200/80 space-y-0.5 shadow-2xs">
+          <span class="text-slate-400 font-medium text-[10px] block">법정 서류 보존 기한</span>
+          <strong class="text-emerald-700 font-bold font-mono">${escapeHtml(doc.retention || '3년')}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 실무 핵심 점검 체크포인트 -->
+    <div class="p-4 bg-sky-50/60 rounded-xl border border-sky-200/80 space-y-2">
+      <h4 class="font-bold text-xs text-sky-950 flex items-center gap-1.5">
+        <i data-lucide="check-square" class="w-4 h-4 text-sky-600"></i>
+        <span>담당자 필수 점검 체크포인트 (SOP 기준)</span>
+      </h4>
+      <div class="space-y-1.5">
+        ${(doc.checkpoints || ['규정 준수 여부 확인']).map((chk, i) => `
+          <div class="p-2 bg-white rounded-lg border border-sky-100 flex items-start gap-2 shadow-2xs">
+            <span class="w-4 h-4 rounded-full bg-sky-100 text-sky-700 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">${i + 1}</span>
+            <span class="text-xs text-slate-800 leading-snug">${escapeHtml(chk)}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <!-- 부속 서식 및 양식 목록 -->
+    <div class="p-4 bg-white rounded-xl border border-slate-200 space-y-2.5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h4 class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+          <i data-lucide="paperclip" class="w-4 h-4 text-slate-600"></i>
+          <span>연계 부속 표준 서식 (${subForms.length}종)</span>
+        </h4>
+        <span class="text-[10px] text-slate-400 font-mono">HWP / Excel 표준 서식철</span>
+      </div>
+
+      ${subForms.length > 0 ? `
+        <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+          ${subForms.map(sf => `
+            <div class="p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-lg border border-slate-200/80 flex items-center justify-between gap-3 text-xs transition">
+              <div class="flex items-center gap-2 truncate">
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white border border-slate-200 font-bold text-slate-600 shrink-0">${escapeHtml(sf.code)}</span>
+                <span class="font-semibold text-slate-900 truncate">${escapeHtml(sf.title)}</span>
+              </div>
+              <button onclick="copySubFormName('${escapeHtml(sf.code)}', '${escapeHtml(sf.title)}')" class="shrink-0 px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded text-[10px] font-bold shadow-2xs transition flex items-center gap-1">
+                <i data-lucide="copy" class="w-3 h-3 text-slate-500"></i>
+                <span>서식명 복사</span>
+              </button>
+            </div>
+          `).join("")}
+        </div>
+      ` : `
+        <p class="text-xs text-slate-400 py-3 text-center">연계된 별도 부속 서식이 없는 본문 단독 규정입니다.</p>
+      `}
+    </div>
+
+    <!-- 보관 파일 및 로컬 경로 안내 -->
+    <div class="p-3 bg-slate-100/70 rounded-xl text-[11px] text-slate-600 space-y-1 border border-slate-200">
+      <div class="flex items-center gap-1 font-bold text-slate-700">
+        <i data-lucide="folder" class="w-3.5 h-3.5 text-slate-500"></i>
+        <span>로컬 파일 보관 위치:</span>
+      </div>
+      <p class="font-mono text-[10px] text-slate-500 break-all">
+        ${escapeHtml(isHidden 
+          ? '[정리본]_산업안전관리체계/09_안전보건경영시스템(ISO45001·중처법·규정)/안전보건관리체계 (케이프라이드)/'
+          : '안전보건관리체계 (케이프라이드 및 보담)/')}
+      </p>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  lucide.createIcons();
+}
+window.openSysDocDetailModal = openSysDocDetailModal;
+
+function closeSysDocDetailModal() {
+  const modal = document.getElementById("sysdoc-detail-modal");
+  if (modal) modal.classList.add("hidden");
+}
+window.closeSysDocDetailModal = closeSysDocDetailModal;
+
+function copySubFormName(code, title) {
+  const text = `${code} ${title}`;
+  navigator.clipboard.writeText(text).then(() => {
+    alert(`서식 정보 "${text}"가 클립보드에 복사되었습니다.\n검색이나 한글 문서 파일 찾기에 활용하세요.`);
+  }).catch(() => {
+    alert(`"${text}"`);
+  });
+}
+window.copySubFormName = copySubFormName;
