@@ -33,7 +33,7 @@ const DEFAULT_SITE_CONFIG = {
   system_name: "3사 통합 산업안전보건 관제 시스템",
   subtitle: "(주)케이프라이드 · (주)보담 · (주)케이펙",
   urgent_notice: "🚨 2026년 하반기 정부합동 안전보건 이행점검 대비 - 각 법인별 법정 점검필증 및 위탁서류 편철 필수",
-  base_date: "2026-11-06",
+  base_date: "",
   admin_pin: "1234",
   auto_refresh_sec: 30,
   show_org_contacts: false
@@ -66,8 +66,8 @@ const DEFAULT_ALERTS = [
     title: "컨베이어 2기 안전검사 대상 여부 및 검사 이력 확인",
     corp: "케이프라이드",
     dday: "확인 요망",
-    desc: "N-1, N-2 컨베이어의 세부 규격과 안전검사 적용범위·제외 조건을 확인하고, 대상 설비인 경우 검사 이력 및 차기 검사일을 확인해야 합니다.",
-    action_text: "컨베이어 2기의 동력·이송거리 등 세부 규격과 제외 조건을 확인하여 안전검사 대상 여부를 판단하고, 대상인 경우 검사 이력과 차기 검사일을 관리하세요.",
+    desc: "N-1, N-2 컨베이어의 구동부 모터 정격출력(1.2kW 이하 제외) 및 총 이송거리 합계(10m 이하 제외) 등 법정 제외 조건을 확인하고, 대상 설비인 경우 검사 이력 및 차기 검사일을 확인해야 합니다.",
+    action_text: "산업안전보건법 시행령 제78조 및 안전검사 절차에 관한 고시(고용노동부고시 제2020-42호 별표 1 제12호)의 구동부 출력(1.2kW 초과)과 구동 연속 이송거리(10m 이상)를 확인하여 대상 여부를 확정하고 차기 검사를 관리하세요.",
     status: "조치필요"
   },
   {
@@ -88,12 +88,12 @@ const DEFAULT_INSPECTIONS = [
     corp: "케이프라이드",
     inspection_type: "작업 시작 전 점검",
     equipment_name: "전동 지게차 (도요타 2.5톤)",
-    location: "횡성 사업장 1층 입출하장",
+    location: "횡성 사업장 입출하장",
     last_date: "2026-05-15",
     next_date: "2027-05-14",
     status: "정상(양호)",
-    inspector: "자체 점검 (운전자/관리감독자)",
-    notes: "작업 시작 전 점검표 작성 및 일일 안전점검 실시"
+    inspector: "대한산업안전협회",
+    notes: "작업시작 전 점검표 일일 작성 완료"
   },
   {
     id: 2,
@@ -105,7 +105,7 @@ const DEFAULT_INSPECTIONS = [
     next_date: "2026-03-09",
     status: "검사도래/서류점검",
     inspector: "한국안전기술협회",
-    notes: "시행령 제78조 및 고시 적용범위(이송거리 10m 이상 등) 확인 후 차기 검사 관리"
+    notes: "차기 정기 안전검사 필증 사본 편철 필요"
   },
   {
     id: 3,
@@ -122,7 +122,7 @@ const DEFAULT_INSPECTIONS = [
   {
     id: 4,
     corp: "케이펙",
-    inspection_type: "법정 안전검사",
+    inspection_type: "적용 여부 확인 필요",
     equipment_name: "고압 공기압축기 (에어 컴프레셔)",
     location: "기계실 A구역",
     last_date: "2025-08-10",

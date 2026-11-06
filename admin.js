@@ -410,9 +410,10 @@ function openInspectionModal(data = null) {
       </div>
 
       <div>
-        <label class="block font-semibold text-slate-700 mb-1">비고 및 조치사항</label>
+        <label class="block font-semibold text-slate-700 mb-1">비고 및 조치사항 (제원 정보 포함)</label>
         <input type="text" id="modal-insp-notes" value="${isEdit ? escapeHtml(data.notes || '') : ''}"
-          placeholder="특이사항 입력 (예: 작업 시작 전 점검표 작성 완료, 고시 적용범위 확인 등)" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+          placeholder="예: 게이지압력 0.2MPa 초과 여부, 컨베이어 구동모터 정격출력(1.2kW) 및 총이송거리(10m) 등" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+        <p class="text-[10px] text-slate-400 mt-1">※ 공기압축기: 저장탱크 설계압력(0.2MPa 초과) 및 PV값 확인 필요 / 컨베이어: 모터 1.2kW 이하 및 총이송거리 10m 이하 제외 확인</p>
       </div>
 
       <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
@@ -683,7 +684,7 @@ function fillSiteConfigForm() {
   document.getElementById("cfg-system-name").value = currentSiteConfig.system_name || "통합 산업안전보건 관제 시스템";
   document.getElementById("cfg-subtitle").value = currentSiteConfig.subtitle || "(주)케이프라이드 · (주)보담";
   document.getElementById("cfg-urgent-notice").value = currentSiteConfig.urgent_notice || "";
-  document.getElementById("cfg-base-date").value = currentSiteConfig.base_date || "2026-11-06";
+  document.getElementById("cfg-base-date").value = currentSiteConfig.base_date || "";
   document.getElementById("cfg-admin-pin").value = currentSiteConfig.admin_pin || "1234";
 
   const chkSystemDocs = document.getElementById("cfg-show-system-docs");
@@ -695,13 +696,14 @@ function fillSiteConfigForm() {
 async function saveSiteConfig(e) {
   e.preventDefault();
   const chkSystemDocs = document.getElementById("cfg-show-system-docs");
+  const rawBaseDate = document.getElementById("cfg-base-date").value;
 
   currentSiteConfig = {
     ...currentSiteConfig,
     system_name: document.getElementById("cfg-system-name").value.trim(),
     subtitle: document.getElementById("cfg-subtitle").value.trim(),
     urgent_notice: document.getElementById("cfg-urgent-notice").value.trim(),
-    base_date: document.getElementById("cfg-base-date").value,
+    base_date: rawBaseDate && rawBaseDate.trim() !== "" ? rawBaseDate.trim() : null,
     admin_pin: document.getElementById("cfg-admin-pin").value.trim() || "1234",
     show_all_system_docs: chkSystemDocs ? chkSystemDocs.checked : false
   };

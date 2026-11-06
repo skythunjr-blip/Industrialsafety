@@ -281,11 +281,11 @@ function renderAlerts() {
   const defaultGuides = {
     1: "대행기관(대한안전관리본부)에 연락하여 2026년 계약 자동연장 확인 공문을 수령하고, 월별 방문기술지도 일지 바인더 편철을 확인하세요.",
     2: "패티실 소음 89.8dB(A)는 연 1회 특례 기준을 충족하지 않으므로 반기 측정 기준으로 관리하세요. 통상적인 작업조건이 반영될 수 있도록 측정기관(건강한일터)과 사전에 일정을 조율하세요.",
-    3: "컨베이어 2기의 동력·이송거리 등 세부 규격과 제외 조건을 확인하여 안전검사 대상 여부를 판단하고, 대상인 경우 검사 이력과 차기 검사일을 관리하세요.",
+    3: "산업안전보건법 시행령 제78조 및 안전검사 절차에 관한 고시(고용노동부고시 제2020-42호 별표 1 제12호)의 구동부 전동기 정격출력 합계(1.2kW 초과)와 연속 이송거리 합계(10m 이상) 등 적용 제외 조건을 확인하여 대상 여부를 판단하고 차기 검사를 관리하세요.",
     4: "노사 위원들과 회의 일정 및 안건을 사전에 조율하고, 회의록 양식을 구비하여 의결사항 및 이행 결과를 기록·관리하세요."
   };
 
-  const baseDate = (window.currentSiteConfig && window.currentSiteConfig.base_date) || "2026-11-06";
+  const baseDate = (siteConfig && siteConfig.base_date) ? siteConfig.base_date : "";
 
   container.innerHTML = filtered.map(a => {
     const howToText = (a.action_text && a.action_text.length > 8)
@@ -358,7 +358,11 @@ function renderHomeUpcomingEvents() {
     info: { text: "안내", class: "bg-sky-100 text-sky-700 border-sky-200" }
   };
 
-  container.innerHTML = filtered.slice(0, 4).map(ev => `
+  const baseDate = (siteConfig && siteConfig.base_date) ? siteConfig.base_date : "";
+
+  container.innerHTML = filtered.slice(0, 4).map(ev => {
+    const dynamicDDay = ev.date ? calculateDDay(ev.date, baseDate) : (ev.ddayText || '');
+    return `
     <div onclick="switchPortalTab('calendar'); selectCalendarDate('${ev.date}');" 
       class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-emerald-300 hover:shadow-xs transition cursor-pointer flex flex-col justify-between space-y-2">
       <div class="space-y-1.5">
@@ -366,7 +370,7 @@ function renderHomeUpcomingEvents() {
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeMap[ev.type]?.class || badgeMap.info.class}">
             ${badgeMap[ev.type]?.text || "법정"}
           </span>
-          <span class="text-[11px] font-bold text-rose-600 font-mono">${escapeHtml(ev.ddayText || '')}</span>
+          <span class="text-[11px] font-bold text-rose-600 font-mono">${escapeHtml(dynamicDDay)}</span>
         </div>
         <div class="text-[10px] font-semibold text-slate-500">${escapeHtml(ev.corp)} &bull; <span class="font-mono text-emerald-700 font-bold">${ev.date}</span></div>
         <h4 class="font-bold text-xs text-slate-900 leading-snug truncate" title="${escapeHtml(ev.title)}">${escapeHtml(ev.title)}</h4>
@@ -377,7 +381,8 @@ function renderHomeUpcomingEvents() {
         <i data-lucide="chevron-right" class="w-3 h-3"></i>
       </div>
     </div>
-  `).join("");
+    `;
+  }).join("");
 
   lucide.createIcons();
 }
