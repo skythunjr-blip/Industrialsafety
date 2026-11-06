@@ -281,18 +281,25 @@ async function deleteAlertItem(id) {
 }
 
 // ==========================================
-// 2. 법정 안전검사 설비 관리 (Inspections)
+// 2. 안전검사 및 설비 점검 관리 (Inspections)
 // ==========================================
 function renderInspections() {
   const tbody = document.getElementById("inspections-table-body");
   if (!currentInspections.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">등록된 설비가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">등록된 설비가 없습니다.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = currentInspections.map(item => `
+  tbody.innerHTML = currentInspections.map(item => {
+    const isForklift = (item.inspection_type === "작업 시작 전 점검" || (item.equipment_name && item.equipment_name.includes("지게차")));
+    const typeBadge = isForklift
+      ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">작업 시작 전 점검</span>`
+      : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">법정 안전검사</span>`;
+
+    return `
     <tr class="hover:bg-slate-50 transition">
       <td class="py-3 px-4 font-semibold text-slate-900">${escapeHtml(item.corp)}</td>
+      <td class="py-3 px-4">${typeBadge}</td>
       <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(item.equipment_name)}</td>
       <td class="py-3 px-4 text-slate-600">${escapeHtml(item.location || '-')}</td>
       <td class="py-3 px-4 font-mono text-slate-600">${escapeHtml(item.last_date || '-')}</td>
@@ -314,14 +321,15 @@ function renderInspections() {
         </div>
       </td>
     </tr>
-  `).join("");
+    `;
+  }).join("");
 
   lucide.createIcons();
 }
 
 function openInspectionModal(data = null) {
   const isEdit = !!data;
-  document.getElementById("modal-title").textContent = isEdit ? "설비 점검 현황 수정" : "신규 검사 설비 등록";
+  document.getElementById("modal-title").textContent = isEdit ? "설비 점검 현황 수정" : "신규 검사·점검 설비 등록";
   
   const body = document.getElementById("modal-form-body");
   body.innerHTML = `
@@ -336,51 +344,60 @@ function openInspectionModal(data = null) {
           </select>
         </div>
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">설비명 / 기종</label>
-          <input type="text" id="modal-insp-name" required value="${isEdit ? escapeHtml(data.equipment_name) : ''}"
-            placeholder="예: 전동 지게차 (도요타 2.5톤)" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+          <label class="block font-semibold text-slate-700 mb-1">점검 유형 구분</label>
+          <select id="modal-insp-type" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+            <option value="법정 안전검사" ${(!isEdit || (data && data.inspection_type !== '작업 시작 전 점검' && !(data.equipment_name && data.equipment_name.includes('지게차')))) ? 'selected' : ''}>법정 안전검사 (시행령 제78조)</option>
+            <option value="작업 시작 전 점검" ${(isEdit && (data.inspection_type === '작업 시작 전 점검' || (data.equipment_name && data.equipment_name.includes('지게차')))) ? 'selected' : ''}>작업 시작 전 점검 (규칙 제35조 - 지게차 등)</option>
+          </select>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">설비명 / 기종</label>
+          <input type="text" id="modal-insp-name" required value="${isEdit ? escapeHtml(data.equipment_name) : ''}"
+            placeholder="예: 원료 이송용 수평 컨베이어 (N-1)" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+        </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">설치 위치</label>
           <input type="text" id="modal-insp-location" value="${isEdit ? escapeHtml(data.location || '') : ''}"
             placeholder="예: 횡성 사업장 1층 입출하장" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
         </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">검사 기관</label>
+          <label class="block font-semibold text-slate-700 mb-1">검사·점검 주체</label>
           <input type="text" id="modal-insp-inspector" value="${isEdit ? escapeHtml(data.inspector || '') : ''}"
-            placeholder="예: 대한산업안전협회" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+            placeholder="예: 한국안전기술협회 또는 자체 점검" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">판정 상태</label>
+          <select id="modal-insp-status" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+            <option value="정상(양호)" ${isEdit && data.status === '정상(양호)' ? 'selected' : ''}>정상(양호)</option>
+            <option value="검사도래/서류점검" ${isEdit && data.status === '검사도래/서류점검' ? 'selected' : ''}>검사도래/서류점검</option>
+            <option value="부적합/조치필요" ${isEdit && data.status === '부적합/조치필요' ? 'selected' : ''}>부적합/조치필요</option>
+          </select>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">최근 검사일</label>
+          <label class="block font-semibold text-slate-700 mb-1">최근 검사·점검일</label>
           <input type="date" id="modal-insp-last-date" value="${isEdit ? (data.last_date || '') : ''}"
             class="w-full p-2 border border-slate-300 rounded-lg outline-none">
         </div>
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">차기 예정 검사일</label>
+          <label class="block font-semibold text-slate-700 mb-1">차기 예정일</label>
           <input type="date" id="modal-insp-next-date" value="${isEdit ? (data.next_date || '') : ''}"
             class="w-full p-2 border border-slate-300 rounded-lg outline-none">
         </div>
       </div>
 
       <div>
-        <label class="block font-semibold text-slate-700 mb-1">판정 상태</label>
-        <select id="modal-insp-status" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
-          <option value="정상(양호)" ${isEdit && data.status === '정상(양호)' ? 'selected' : ''}>정상(양호)</option>
-          <option value="검사도래/서류점검" ${isEdit && data.status === '검사도래/서류점검' ? 'selected' : ''}>검사도래/서류점검</option>
-          <option value="부적합/조치필요" ${isEdit && data.status === '부적합/조치필요' ? 'selected' : ''}>부적합/조치필요</option>
-        </select>
-      </div>
-
-      <div>
         <label class="block font-semibold text-slate-700 mb-1">비고 및 조치사항</label>
         <input type="text" id="modal-insp-notes" value="${isEdit ? escapeHtml(data.notes || '') : ''}"
-          placeholder="특이사항 입력" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+          placeholder="특이사항 입력 (예: 작업 시작 전 점검표 작성 완료, 고시 적용범위 확인 등)" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
       </div>
 
       <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
@@ -404,6 +421,7 @@ async function saveInspectionForm(e, editId) {
   const inspItem = {
     id: editId || Date.now(),
     corp: document.getElementById("modal-insp-corp").value,
+    inspection_type: document.getElementById("modal-insp-type").value,
     equipment_name: document.getElementById("modal-insp-name").value.trim(),
     location: document.getElementById("modal-insp-location").value.trim(),
     inspector: document.getElementById("modal-insp-inspector").value.trim(),

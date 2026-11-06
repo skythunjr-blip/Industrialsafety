@@ -170,6 +170,37 @@ function renderKPIs() {
   if (elInspections) elInspections.textContent = filteredInspections.length;
 }
 
+// D-Day 자동 계산 헬퍼 함수
+function calculateDDay(targetDateStr, baseDateStr) {
+  if (!targetDateStr) return "";
+  const cleaned = String(targetDateStr).trim().replace(/\./g, "-");
+  const m = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (!m) return targetDateStr; // "확인 요망", "만기 도래" 등 일반 텍스트는 그대로 반환
+  
+  const targetYear = parseInt(m[1], 10);
+  const targetMonth = parseInt(m[2], 10) - 1;
+  const targetDay = parseInt(m[3], 10);
+  const target = new Date(targetYear, targetMonth, targetDay);
+
+  let base;
+  if (baseDateStr) {
+    const bm = String(baseDateStr).trim().replace(/\./g, "-").match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (bm) {
+      base = new Date(parseInt(bm[1], 10), parseInt(bm[2], 10) - 1, parseInt(bm[3], 10));
+    }
+  }
+  if (!base) {
+    const now = new Date();
+    base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  const diffTime = target.getTime() - base.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "D-Day";
+  if (diffDays > 0) return `D-${diffDays}`;
+  return `D+${Math.abs(diffDays)}`;
+}
+
 // 긴급 D-Day 및 알림 카드 렌더링
 function renderAlerts() {
   const container = document.getElementById("alerts-container");
@@ -208,15 +239,24 @@ function renderAlerts() {
 
   const defaultGuides = {
     1: "대행기관(대한안전관리본부)에 연락하여 2026년 계약 자동연장 확인 공문을 수령하고, 월별 방문기술지도 일지 바인더 편철을 확인하세요.",
-    2: "측정기관(건강한일터)에 연락하여 12월 셋째 주 측정일을 사전 예약하고, 당일 패티가공실 등 대상 공정이 정상 가동되도록 생산팀과 일정을 맞추세요.",
-    3: "안전보건공단 안전검사 포털(kosa.kosha.or.kr)에서 합격필증을 재발급받아 컨베이어 모터 외함에 부착하고 사본을 검사철에 보관하세요.",
-    4: "회의 7일 전(11.18까지) 노사 위원들에게 일시·장소를 사전 공지하고, 당일 회의록(동절기 한파 방한용품 및 난방설비 점검 안건) 양식을 준비하세요."
+    2: "패티실 소음 89.8dB(A)는 연 1회 특례 기준을 충족하지 않으므로 반기 측정 기준으로 관리하세요. 통상적인 작업조건이 반영될 수 있도록 측정기관(건강한일터)과 사전에 일정을 조율하세요.",
+    3: "컨베이어 2기의 동력·이송거리 등 세부 규격과 제외 조건을 확인하여 안전검사 대상 여부를 판단하고, 대상인 경우 검사 이력과 차기 검사일을 관리하세요.",
+    4: "노사 위원들과 회의 일정 및 안건을 사전에 조율하고, 회의록 양식을 구비하여 의결사항 및 이행 결과를 기록·관리하세요."
   };
+
+  const baseDate = (window.currentSiteConfig && window.currentSiteConfig.base_date) || "2026-11-06";
 
   container.innerHTML = filtered.map(a => {
     const howToText = (a.action_text && a.action_text.length > 8)
       ? a.action_text
       : (defaultGuides[a.id] || '');
+
+    // D-Day 자동 계산
+    const calculatedDDay = calculateDDay(a.dday, baseDate);
+    const cleanTitle = (a.title || "").replace(/\s*\(D-?\d+\)/g, "").trim();
+    const displayDDay = (a.dday && /^\d{4}[\.-]\d{1,2}[\.-]\d{1,2}/.test(String(a.dday).trim()))
+      ? `${a.dday} (${calculatedDDay})`
+      : (a.dday || calculatedDDay);
 
     return `
     <div class="p-5 rounded-2xl border ${borderClass[a.level] || borderClass.info} shadow-xs flex flex-col justify-between hover:shadow-md transition">
@@ -225,10 +265,10 @@ function renderAlerts() {
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeClass[a.level] || badgeClass.info}">
             ${a.level === 'critical' ? '긴급' : (a.level === 'warning' ? '주의' : '안내')}
           </span>
-          <span class="text-[11px] font-bold font-mono text-rose-600">${escapeHtml(a.dday || '')}</span>
+          <span class="text-[11px] font-bold font-mono text-rose-600">${escapeHtml(displayDDay)}</span>
         </div>
         <div class="text-[11px] font-semibold text-slate-500 mb-1">${escapeHtml(a.corp)}</div>
-        <h3 class="font-bold text-xs sm:text-sm text-slate-900 mb-2 leading-snug">${escapeHtml(a.title)}</h3>
+        <h3 class="font-bold text-xs sm:text-sm text-slate-900 mb-2 leading-snug">${escapeHtml(cleanTitle)}</h3>
         <p class="text-xs text-slate-600 leading-relaxed mb-3">${escapeHtml(a.desc || '')}</p>
 
         <!-- 💡 구체적인 실무 조치 방법 블록 -->
@@ -435,7 +475,7 @@ function renderCorpCards() {
   }).join("");
 }
 
-// 법정 안전검사 설비 현황 테이블
+// 법정 안전검사 및 설비 점검 현황 테이블
 function renderInspectionsTable() {
   const tbody = document.getElementById("inspections-tbody");
   const filtered = selectedCorp === "ALL"
@@ -443,13 +483,20 @@ function renderInspectionsTable() {
     : allInspections.filter(i => i.corp === selectedCorp);
 
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-xs text-slate-400">등록된 검사 대상 설비가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-xs text-slate-400">등록된 검사·점검 대상 설비가 없습니다.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = filtered.map(item => `
+  tbody.innerHTML = filtered.map(item => {
+    const isForklift = (item.inspection_type === "작업 시작 전 점검" || (item.equipment_name && item.equipment_name.includes("지게차")));
+    const typeBadge = isForklift
+      ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">작업 시작 전 점검</span>`
+      : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">법정 안전검사</span>`;
+
+    return `
     <tr class="hover:bg-slate-50 transition">
       <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(item.corp)}</td>
+      <td class="py-3 px-4">${typeBadge}</td>
       <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(item.equipment_name)}</td>
       <td class="py-3 px-4 text-slate-500">${escapeHtml(item.location || '-')}</td>
       <td class="py-3 px-4 font-mono text-slate-600">${escapeHtml(item.last_date || '-')}</td>
@@ -462,7 +509,8 @@ function renderInspectionsTable() {
       <td class="py-3 px-4 text-slate-600">${escapeHtml(item.inspector || '-')}</td>
       <td class="py-3 px-4 text-slate-500 text-[11px]">${escapeHtml(item.notes || '-')}</td>
     </tr>
-  `).join("");
+    `;
+  }).join("");
 }
 
 // 공지사항 렌더링

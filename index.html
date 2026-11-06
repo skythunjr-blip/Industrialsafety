@@ -337,15 +337,15 @@
             </div>
           </section>
 
-          <!-- 법정 안전검사 설비 현황 테이블 -->
+          <!-- 법정 안전검사 및 설비 점검 현황 테이블 -->
           <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
                   <i data-lucide="shield-alert" class="w-4 h-4 text-purple-600"></i>
-                  <span>횡성 사업장 안전검사 대상 설비 현황</span>
+                  <span>횡성 사업장 안전검사 및 설비 점검 현황</span>
                 </h3>
-                <p class="text-xs text-slate-500 mt-0.5">시행령 제78조 및 관련 고시에 따른 대상 설비의 검사 이력 관리 (지게차 제외)</p>
+                <p class="text-xs text-slate-500 mt-0.5">안전검사 대상 설비(컨베이어 등)와 작업 시작 전 점검 대상(지게차 등) 구분 관리</p>
               </div>
               <a href="admin.html" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">관리자 수정 &rarr;</a>
             </div>
@@ -354,12 +354,14 @@
                 <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
                   <tr>
                     <th class="py-3 px-4">법인</th>
+                    <th class="py-3 px-4">점검 유형</th>
                     <th class="py-3 px-4">설비명</th>
                     <th class="py-3 px-4">설치 위치</th>
-                    <th class="py-3 px-4">최근 검사일</th>
-                    <th class="py-3 px-4">차기 검사 예정일</th>
+                    <th class="py-3 px-4">최근 점검일</th>
+                    <th class="py-3 px-4">차기 예정일</th>
                     <th class="py-3 px-4">상태</th>
-                    <th class="py-3 px-4">검사 기관</th>
+                    <th class="py-3 px-4">검사·점검 주체</th>
+                    <th class="py-3 px-4">관리 비고</th>
                   </tr>
                 </thead>
                 <tbody id="inspections-tbody" class="divide-y divide-slate-100">
