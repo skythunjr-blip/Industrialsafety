@@ -64,15 +64,6 @@
           <span class="text-[10px] bg-sky-700/80 text-white px-1.5 py-0.5 rounded font-bold">홈</span>
         </button>
 
-        <!-- 2. 안전보건관리체계도 (NEW) -->
-        <button onclick="switchPortalTab('organization')" id="nav-btn-organization" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
-          <div class="flex items-center gap-2.5">
-            <i data-lucide="network" class="w-4 h-4 text-amber-400"></i>
-            <span>안전보건관리체계도</span>
-          </div>
-          <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">2사</span>
-        </button>
-
         <!-- 2. 안전보건 캘린더 (Option 3) -->
         <button onclick="switchPortalTab('calendar')" id="nav-btn-calendar" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
           <div class="flex items-center gap-2.5">
@@ -270,26 +261,6 @@
             </div>
           </section>
 
-          <!-- 안전보건관리체계도 바로가기 배너 -->
-          <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-indigo-500/10 border border-amber-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-amber-300 hover:shadow-xs transition cursor-pointer" onclick="switchPortalTab('organization')">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <i data-lucide="network" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h3 class="font-bold text-sm text-slate-900">2사 안전보건관리체계도 & 비상대응체계 구축 완료</h3>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">산안법 &bull; 중처법 준수</span>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">대표이사 &bull; 안전보건관리책임자 &bull; 외부 위탁기관 &bull; 사내실무 &bull; 21개 관리감독자 계통 및 비상연락망</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0 text-xs font-bold text-amber-700 bg-amber-50 sm:bg-transparent px-3 py-1.5 rounded-lg">
-              <span>체계도 열람하기</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </div>
-          </div>
-
           <!-- 긴급 D-Day 및 법정 이슈 카드 섹션 (실무 조치 가이드 내장) -->
           <section class="space-y-3">
             <div class="flex items-center justify-between">
@@ -402,54 +373,6 @@
               <!-- JS 동적 렌더링 -->
             </div>
           </section>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- TAB: 안전보건관리체계도 & 비상대응체계 (#portal-view-organization) -->
-        <!-- ============================================== -->
-        <div id="portal-view-organization" class="portal-tab-content hidden space-y-6">
-          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-6">
-            
-            <!-- 상단 헤더 컨트롤 -->
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-              <div>
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">산안법 제14조~19조 준수</span>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200">중대재해처벌법 제4조</span>
-                </div>
-                <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <i data-lucide="network" class="w-5 h-5 text-amber-600"></i>
-                  <span>안전보건관리체계도 및 비상대응체계</span>
-                </h2>
-                <p class="text-xs text-slate-500 mt-0.5">경영책임자 &bull; 안전보건관리책임자 &bull; 외부 위탁기관 &bull; 사내실무 &bull; 관리감독자 계통도</p>
-              </div>
-
-              <!-- 우측 법인 탭 전환 버튼 -->
-              <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
-                <button onclick="switchOrgCorp('kpride')" id="btn-org-kpride" class="org-tab-btn px-3 py-1.5 rounded-lg bg-sky-600 text-white shadow-xs transition">
-                  (주)케이프라이드
-                </button>
-                <button onclick="switchOrgCorp('bodam')" id="btn-org-bodam" class="org-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
-                  (주)보담
-                </button>
-                <button onclick="switchOrgCorp('emergency')" id="btn-org-emergency" class="org-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
-                  <i data-lucide="phone-call" class="w-3.5 h-3.5 text-rose-500"></i>
-                  <span>비상연락망</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- 개인정보 보호 및 연락처 잠금 해제 제어 배너 -->
-            <div id="org-contact-security-banner" class="p-4 rounded-xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <!-- JS 동적 렌더링 -->
-            </div>
-
-            <!-- 체계도 및 비상연락망 메인 렌더링 영역 -->
-            <div id="org-chart-container" class="space-y-6">
-              <!-- JS 동적 렌더링 -->
-            </div>
-
-          </div>
         </div>
 
         <!-- ============================================== -->
@@ -797,40 +720,6 @@
       <div id="modal-notice-content" class="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 min-h-[100px] whitespace-pre-wrap"></div>
       <div class="flex justify-end pt-2">
         <button onclick="closeNoticeModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 안전보건관리체계도 연락처 잠금 해제 PIN 모달 -->
-  <div id="org-contact-pin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-700 flex items-center justify-center">
-            <i data-lucide="lock" class="w-4 h-4"></i>
-          </div>
-          <h3 class="font-bold text-sm text-slate-900">비상연락망 연락처 열람 인증</h3>
-        </div>
-        <button onclick="closeOrgUnlockModal()" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <p class="text-xs text-slate-600 leading-relaxed">
-        개인정보 보호 규정에 따라 체계도 내 실무 연락처는 마스킹 처리되어 있습니다. 열람을 위해 보안 PIN을 입력하세요.
-      </p>
-
-      <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-700">관리자 보안 PIN</label>
-        <input type="password" id="org-unlock-pin-input" maxlength="10" placeholder="PIN 입력 (초기값: 1234)"
-          onkeydown="if(event.key==='Enter') verifyOrgUnlockPin()"
-          class="w-full p-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none font-mono text-center tracking-widest text-base">
-        <p id="org-unlock-error-msg" class="text-[11px] text-rose-600 font-semibold hidden"></p>
-      </div>
-
-      <div class="pt-2 flex justify-end gap-2">
-        <button onclick="closeOrgUnlockModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">취소</button>
-        <button onclick="verifyOrgUnlockPin()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow transition">인증 및 열람</button>
       </div>
     </div>
   </div>

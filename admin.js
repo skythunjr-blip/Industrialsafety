@@ -646,16 +646,10 @@ function fillSiteConfigForm() {
   document.getElementById("cfg-urgent-notice").value = currentSiteConfig.urgent_notice || "";
   document.getElementById("cfg-base-date").value = currentSiteConfig.base_date || "2026-11-05";
   document.getElementById("cfg-admin-pin").value = currentSiteConfig.admin_pin || "1234";
-
-  const chkOrgContacts = document.getElementById("cfg-show-org-contacts");
-  if (chkOrgContacts) {
-    chkOrgContacts.checked = !!currentSiteConfig.show_org_contacts;
-  }
 }
 
 async function saveSiteConfig(e) {
   e.preventDefault();
-  const chkOrgContacts = document.getElementById("cfg-show-org-contacts");
 
   currentSiteConfig = {
     ...currentSiteConfig,
@@ -663,8 +657,7 @@ async function saveSiteConfig(e) {
     subtitle: document.getElementById("cfg-subtitle").value.trim(),
     urgent_notice: document.getElementById("cfg-urgent-notice").value.trim(),
     base_date: document.getElementById("cfg-base-date").value,
-    admin_pin: document.getElementById("cfg-admin-pin").value.trim() || "1234",
-    show_org_contacts: chkOrgContacts ? chkOrgContacts.checked : false
+    admin_pin: document.getElementById("cfg-admin-pin").value.trim() || "1234"
   };
 
   const res = await SafetyDB.updateSiteConfig(currentSiteConfig);
