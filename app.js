@@ -168,10 +168,51 @@ function renderKPIs() {
 
   const elInspections = document.getElementById("kpi-inspections-count");
   if (elInspections) elInspections.textContent = filteredInspections.length;
+
+  // 세부 점검 유형별 건수 계산 (법정 안전검사 / 작업 시작 전 점검 / 적용 여부 확인 필요 / 사업장 자체점검)
+  let countStatutory = 0;
+  let countPreop = 0;
+  let countConfirm = 0;
+  let countSelf = 0;
+
+  filteredInspections.forEach(item => {
+    const type = item.inspection_type;
+    if (type === "법정 안전검사") countStatutory++;
+    else if (type === "작업 시작 전 점검") countPreop++;
+    else if (type === "사업장 자체점검") countSelf++;
+    else countConfirm++; // "적용 여부 확인 필요" 또는 미지정
+  });
+
+  const elStatutory = document.getElementById("kpi-insp-statutory");
+  if (elStatutory) elStatutory.textContent = countStatutory;
+
+  const elPreop = document.getElementById("kpi-insp-preop");
+  if (elPreop) elPreop.textContent = countPreop;
+
+  const elConfirm = document.getElementById("kpi-insp-confirm");
+  if (elConfirm) elConfirm.textContent = countConfirm;
+
+  const elSelf = document.getElementById("kpi-insp-self");
+  if (elSelf) elSelf.textContent = countSelf;
 }
 
-// D-Day 자동 계산 헬퍼 함수
-function calculateDDay(targetDateStr, baseDateStr) {
+// 점검 유형별 뱃지 HTML 반환 함수
+function getInspectionTypeBadge(type) {
+  switch (type) {
+    case "법정 안전검사":
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">법정 안전검사</span>`;
+    case "작업 시작 전 점검":
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">작업 시작 전 점검</span>`;
+    case "사업장 자체점검":
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">사업장 자체점검</span>`;
+    case "적용 여부 확인 필요":
+    default:
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">적용 여부 확인 필요</span>`;
+  }
+}
+
+// D-Day 자동 계산 헬퍼 함수 (현지 로컬 날짜 기준, UTC 시차 왜곡 방지)
+function calculateDDay(targetDateStr, customBaseDateStr) {
   if (!targetDateStr) return "";
   const cleaned = String(targetDateStr).trim().replace(/\./g, "-");
   const m = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
@@ -183,8 +224,8 @@ function calculateDDay(targetDateStr, baseDateStr) {
   const target = new Date(targetYear, targetMonth, targetDay);
 
   let base;
-  if (baseDateStr) {
-    const bm = String(baseDateStr).trim().replace(/\./g, "-").match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (customBaseDateStr && String(customBaseDateStr).trim().length >= 8) {
+    const bm = String(customBaseDateStr).trim().replace(/\./g, "-").match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
     if (bm) {
       base = new Date(parseInt(bm[1], 10), parseInt(bm[2], 10) - 1, parseInt(bm[3], 10));
     }
@@ -194,8 +235,8 @@ function calculateDDay(targetDateStr, baseDateStr) {
     base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
 
-  const diffTime = target.getTime() - base.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const oneDay = 24 * 60 * 60 * 1000;
+  const diffDays = Math.round((target.getTime() - base.getTime()) / oneDay);
   if (diffDays === 0) return "D-Day";
   if (diffDays > 0) return `D-${diffDays}`;
   return `D+${Math.abs(diffDays)}`;
@@ -488,10 +529,7 @@ function renderInspectionsTable() {
   }
 
   tbody.innerHTML = filtered.map(item => {
-    const isForklift = (item.inspection_type === "작업 시작 전 점검" || (item.equipment_name && item.equipment_name.includes("지게차")));
-    const typeBadge = isForklift
-      ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">작업 시작 전 점검</span>`
-      : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">법정 안전검사</span>`;
+    const typeBadge = getInspectionTypeBadge(item.inspection_type);
 
     return `
     <tr class="hover:bg-slate-50 transition">

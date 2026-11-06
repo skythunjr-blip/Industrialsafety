@@ -98,7 +98,7 @@ const DEFAULT_INSPECTIONS = [
   {
     id: 2,
     corp: "케이프라이드",
-    inspection_type: "법정 안전검사",
+    inspection_type: "적용 여부 확인 필요",
     equipment_name: "원료 이송용 수평 컨베이어 (N-1)",
     location: "가공실(1층) 성형·배합 라인",
     last_date: "2024-03-10",
@@ -134,7 +134,7 @@ const DEFAULT_INSPECTIONS = [
   {
     id: 5,
     corp: "케이프라이드",
-    inspection_type: "법정 안전검사",
+    inspection_type: "사업장 자체점검",
     equipment_name: "자동 포장기계 프레스 방호장치",
     location: "완제품 포장실",
     last_date: "2026-02-18",
@@ -289,18 +289,51 @@ const SafetyDB = {
     return list;
   },
 
-  // 4. 법정 안전검사 현황 (inspections)
+  // 4. 안전검사 및 설비 점검 현황 (inspections)
   async getInspections() {
+    let localList = [];
+    try {
+      const local = localStorage.getItem("safety_inspections");
+      if (local) localList = JSON.parse(local);
+    } catch (e) {
+      console.warn("로컬 스토리지 파싱 실패:", e);
+    }
+
     try {
       if (supabaseClient) {
         const { data, error } = await supabaseClient.from("inspections").select("*").order("id", { ascending: true });
-        if (!error && data && data.length > 0) return data;
+        if (!error && data && data.length > 0) {
+          const localMap = new Map(localList.map(item => [item.id, item]));
+          const defaultMap = new Map(DEFAULT_INSPECTIONS.map(item => [item.id, item]));
+
+          // DB 데이터에 inspection_type 병합 (DB 컬럼 미존재 시 localStorage/기본값 보존)
+          const mergedFromDb = data.map(dbItem => {
+            const localItem = localMap.get(dbItem.id);
+            const defItem = defaultMap.get(dbItem.id);
+
+            const inspectionType = dbItem.inspection_type 
+              || (localItem && localItem.inspection_type) 
+              || (defItem && defItem.inspection_type) 
+              || "적용 여부 확인 필요";
+
+            return {
+              ...dbItem,
+              inspection_type: inspectionType
+            };
+          });
+
+          // DB에 아직 동기화되지 않은 신규 로컬 등록 항목도 유지
+          const dbIds = new Set(data.map(d => d.id));
+          const localOnlyItems = localList.filter(l => l && !dbIds.has(l.id));
+
+          return [...mergedFromDb, ...localOnlyItems];
+        }
       }
     } catch (e) {
       console.warn("DB inspections 조회 실패:", e);
     }
-    const local = localStorage.getItem("safety_inspections");
-    return local ? JSON.parse(local) : DEFAULT_INSPECTIONS;
+
+    return localList.length > 0 ? localList : DEFAULT_INSPECTIONS;
   },
 
   async saveInspections(inspectionsList) {
@@ -311,7 +344,16 @@ const SafetyDB = {
         if (error) throw error;
         return { success: true, dbSynced: true };
       } catch (e) {
-        return { success: true, dbSynced: false, error: e.message };
+        console.warn("DB inspections 저장 실패:", e);
+        const isColumnMissing = e.message && (e.message.includes("inspection_type") || e.code === "42703");
+        return { 
+          success: true, 
+          dbSynced: false, 
+          isColumnMissing,
+          error: isColumnMissing
+            ? "Supabase 운영 테이블에 inspection_type 컬럼이 없어 브라우저 로컬에만 저장되었습니다. migration_add_inspection_type.sql을 실행해주세요."
+            : e.message
+        };
       }
     }
     return { success: true, dbSynced: false };

@@ -283,6 +283,20 @@ async function deleteAlertItem(id) {
 // ==========================================
 // 2. 안전검사 및 설비 점검 관리 (Inspections)
 // ==========================================
+function getInspectionTypeBadge(type) {
+  switch (type) {
+    case "법정 안전검사":
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">법정 안전검사</span>`;
+    case "작업 시작 전 점검":
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">작업 시작 전 점검</span>`;
+    case "사업장 자체점검":
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">사업장 자체점검</span>`;
+    case "적용 여부 확인 필요":
+    default:
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">적용 여부 확인 필요</span>`;
+  }
+}
+
 function renderInspections() {
   const tbody = document.getElementById("inspections-table-body");
   if (!currentInspections.length) {
@@ -291,10 +305,7 @@ function renderInspections() {
   }
 
   tbody.innerHTML = currentInspections.map(item => {
-    const isForklift = (item.inspection_type === "작업 시작 전 점검" || (item.equipment_name && item.equipment_name.includes("지게차")));
-    const typeBadge = isForklift
-      ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">작업 시작 전 점검</span>`
-      : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">법정 안전검사</span>`;
+    const typeBadge = getInspectionTypeBadge(item.inspection_type);
 
     return `
     <tr class="hover:bg-slate-50 transition">
@@ -331,6 +342,8 @@ function openInspectionModal(data = null) {
   const isEdit = !!data;
   document.getElementById("modal-title").textContent = isEdit ? "설비 점검 현황 수정" : "신규 검사·점검 설비 등록";
   
+  const currentType = (data && data.inspection_type) ? data.inspection_type : "적용 여부 확인 필요";
+
   const body = document.getElementById("modal-form-body");
   body.innerHTML = `
     <form id="inspection-form" onsubmit="saveInspectionForm(event, ${isEdit ? data.id : null})" class="space-y-4 text-xs">
@@ -346,8 +359,10 @@ function openInspectionModal(data = null) {
         <div>
           <label class="block font-semibold text-slate-700 mb-1">점검 유형 구분</label>
           <select id="modal-insp-type" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
-            <option value="법정 안전검사" ${(!isEdit || (data && data.inspection_type !== '작업 시작 전 점검' && !(data.equipment_name && data.equipment_name.includes('지게차')))) ? 'selected' : ''}>법정 안전검사 (시행령 제78조)</option>
-            <option value="작업 시작 전 점검" ${(isEdit && (data.inspection_type === '작업 시작 전 점검' || (data.equipment_name && data.equipment_name.includes('지게차')))) ? 'selected' : ''}>작업 시작 전 점검 (규칙 제35조 - 지게차 등)</option>
+            <option value="법정 안전검사" ${currentType === '법정 안전검사' ? 'selected' : ''}>법정 안전검사 (시행령 제78조)</option>
+            <option value="작업 시작 전 점검" ${currentType === '작업 시작 전 점검' ? 'selected' : ''}>작업 시작 전 점검 (규칙 제35조 - 지게차 등)</option>
+            <option value="사업장 자체점검" ${currentType === '사업장 자체점검' ? 'selected' : ''}>사업장 자체점검 (사내 규정 점검)</option>
+            <option value="적용 여부 확인 필요" ${currentType === '적용 여부 확인 필요' ? 'selected' : ''}>적용 여부 확인 필요 (제원·고시 요건 검토)</option>
           </select>
         </div>
       </div>
@@ -442,7 +457,13 @@ async function saveInspectionForm(e, editId) {
   closeModal();
   renderInspections();
   renderHeaderInfo();
-  showToast(res.dbSynced ? "✅ Supabase DB에 저장되었습니다." : "💾 로컬에 저장되었습니다.");
+  if (res.dbSynced) {
+    showToast("✅ Supabase DB에 저장되었습니다.");
+  } else if (res.isColumnMissing) {
+    showToast("💾 브라우저 로컬에 저장되었습니다 (DB 미반영: migration_add_inspection_type.sql 실행 필요).", 6000);
+  } else {
+    showToast("💾 브라우저 로컬에 저장되었습니다.");
+  }
 }
 
 async function deleteInspectionItem(id) {
@@ -662,7 +683,7 @@ function fillSiteConfigForm() {
   document.getElementById("cfg-system-name").value = currentSiteConfig.system_name || "통합 산업안전보건 관제 시스템";
   document.getElementById("cfg-subtitle").value = currentSiteConfig.subtitle || "(주)케이프라이드 · (주)보담";
   document.getElementById("cfg-urgent-notice").value = currentSiteConfig.urgent_notice || "";
-  document.getElementById("cfg-base-date").value = currentSiteConfig.base_date || "2026-11-05";
+  document.getElementById("cfg-base-date").value = currentSiteConfig.base_date || "2026-11-06";
   document.getElementById("cfg-admin-pin").value = currentSiteConfig.admin_pin || "1234";
 
   const chkSystemDocs = document.getElementById("cfg-show-system-docs");
