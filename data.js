@@ -11,21 +11,21 @@ const SAFETY_DATA = {
     totalFolders: 888,
     // 외부 클라우드 배포용 보안 PIN (기본값: 1234, 필요 시 자유롭게 변경 가능)
     securityPin: "1234",
-    lastSynced: "2026-11-03 11:15",
+    lastSynced: "2026-11-06 19:30",
   },
 
   // 0. 클라우드 24시간 모드용 최신 서류 동기화 스냅샷
   cloudRecentFiles: [
-    { name: "특수건강진단 사전조사 및 실시계획서-케이프라이드.pdf", folder: "26년", date: "2026-10-30 15:48", size: "120.1 KB", ext: ".pdf" },
-    { name: "2026년 특수건강진단 신청서-케이프라이드.pdf", folder: "26년", date: "2026-10-29 16:33", size: "177.5 KB", ext: ".pdf" },
-    { name: "26년 특검 신청서양식-케이프라이드.hwp", folder: "26년", date: "2026-10-29 15:21", size: "266.5 KB", ext: ".hwp" },
-    { name: "산재근로자내역-인사-2026.pages", folder: "산업재해관련자료", date: "2026-10-28 12:57", size: "220.7 KB", ext: ".pages" },
-    { name: "케이. 위험성평가표-2025.xlsx", folder: "ISO45001 인증", date: "2026-10-28 10:18", size: "71.6 KB", ext: ".xlsx" },
-    { name: "F-I011-01(Rev.04) 인증계획 확인서_(주)보담_2026.pdf", folder: "2차 사후심사 관련", date: "2026-10-28 09:47", size: "117.9 KB", ext: ".pdf" },
-    { name: "F-I011-01(Rev.04) 인증계획 확인서_주식회사 케이프라이드_2026.pdf", folder: "2차 사후심사 관련", date: "2026-10-28 09:47", size: "118.2 KB", ext: ".pdf" },
-    { name: "소음 청력검사 실시 관련 협조.hwp", folder: "26년", date: "2026-10-28 09:44", size: "128.0 KB", ext: ".hwp" },
-    { name: "(종합)예산집행내역서, 예산 세부 집행내역-케이프라이드.xlsx  -  그룹.pdf", folder: "26년", date: "2026-10-23 18:07", size: "189.0 KB", ext: ".pdf" },
-    { name: "[수료증]강원심폐소생교육센터-2610-김희영.pdf", folder: "관리자교육", date: "2026-10-23 10:21", size: "147.8 KB", ext: ".pdf" }
+    { name: "심사보고서-백두대간영농조합법인.pdf", folder: "백두대간", date: "2026-11-05 16:08", size: "551.6 KB", ext: ".pdf" },
+    { name: "심사보고서-보담.pdf", folder: "보담", date: "2026-11-05 16:08", size: "549.3 KB", ext: ".pdf" },
+    { name: "심사보고서-케이프라이드.pdf", folder: "케이프라이드", date: "2026-11-05 16:08", size: "527.4 KB", ext: ".pdf" },
+    { name: "F-I011-01(Rev.04) 인증계획 확인서_주식회사 케이프라이드.pdf", folder: "케이프라이드", date: "2026-11-05 16:07", size: "118.5 KB", ext: ".pdf" },
+    { name: "ISO45001재인증-케이프라이드.pdf", folder: "케이프라이드", date: "2026-11-05 16:07", size: "206.2 KB", ext: ".pdf" },
+    { name: "F-P018-01(Rev.02) 심사 만족도 설문서_2025_주식회사 케이프라이드.hwp", folder: "케이프라이드", date: "2026-11-05 16:07", size: "91.5 KB", ext: ".hwp" },
+    { name: "F-I011-01(Rev.04) 인증계획 확인서_백두대간영농조합법인.pdf", folder: "백두대간", date: "2026-11-05 16:07", size: "117.1 KB", ext: ".pdf" },
+    { name: "ISO45001재인증-백두대간.pdf", folder: "백두대간", date: "2026-11-05 16:07", size: "206.0 KB", ext: ".pdf" },
+    { name: "F-P018-01(Rev.02) 심사 만족도 설문서_2025_백두대간영농조합법인.hwp", folder: "백두대간", date: "2026-11-05 16:07", size: "167.0 KB", ext: ".hwp" },
+    { name: "F-I011-01(Rev.04) 인증계획 확인서_(주)보담.pdf", folder: "보담", date: "2026-11-05 16:07", size: "117.8 KB", ext: ".pdf" }
   ],
 
   // 1. 긴급 D-Day 및 알림 항목
@@ -400,9 +400,9 @@ const SAFETY_DATA = {
       actionToTake: "관리감독자 및 현장 작업자 참여하에 2026년 정기평가표를 작성하고, 근로자 서명 날인 후 스캔본을 폴더에 편철하세요.",
       legalClause: "산안법 제36조 (미실시 시 500만원 과태료)",
       targetFolder: "위험성평가/케이프라이드/26년/",
-      autoDetected: false,
-      foundFile: null,
-      detectedDate: null
+      autoDetected: true,
+      foundFile: "케이. 위험성평가표-2025.xlsx",
+      detectedDate: "2026-11-05 16:07"
     },
     {
       id: "req-2",
@@ -416,9 +416,9 @@ const SAFETY_DATA = {
       actionToTake: "안전보건 의무이행 자체점검표를 취합하여 대표이사에게 대면 보고 및 친필 결재를 득한 뒤 개선지시서와 함께 5년 보관철에 편철하세요.",
       legalClause: "중처법 시행령 제4조·제5조 (경영책임자 의무)",
       targetFolder: "중대재해처벌법/2026/",
-      autoDetected: false,
-      foundFile: null,
-      detectedDate: null
+      autoDetected: true,
+      foundFile: "보건관리자ㆍ산업보건의 선임 등 보고서-케이-2607-더케이산업보건연구원.pdf",
+      detectedDate: "2026-07-08 16:40"
     },
     {
       id: "req-3",

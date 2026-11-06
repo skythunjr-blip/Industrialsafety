@@ -193,6 +193,15 @@ const DEFAULT_CORP_STATS = [
     risk_assessment_rate: 91,
     health_check_rate: 100,
     status_summary: "우수 사업장 (최신 사원연명부 기준: 남 34명 / 여 65명)"
+  },
+  {
+    id: 3,
+    corp_name: "케이펙",
+    worker_count: 28,
+    zero_accident_days: 285,
+    risk_assessment_rate: 88,
+    health_check_rate: 96,
+    status_summary: "정상 가동 (최신 사원연명부 기준: 남 15명 / 여 13명)"
   }
 ];
 
