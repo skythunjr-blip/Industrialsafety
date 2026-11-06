@@ -35,26 +35,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 // 전체 대시보드 데이터 로드
 async function loadDashboardData(isSilent = false) {
   try {
-    siteConfig = await SafetyDB.getSiteConfig();
-    const rawAlerts = await SafetyDB.getAlerts();
-    const rawInspections = await SafetyDB.getInspections();
-    allNotices = await SafetyDB.getNotices();
-    const rawCorpStats = await SafetyDB.getCorpStats();
+    siteConfig = await SafetyDB.getSiteConfig() || {};
+    const rawAlerts = await SafetyDB.getAlerts() || [];
+    const rawInspections = await SafetyDB.getInspections() || [];
+    allNotices = await SafetyDB.getNotices() || [];
+    const rawCorpStats = await SafetyDB.getCorpStats() || [];
 
     // 🔒 케이펙 숨김 처리: 보담과 케이프라이드 2개 사 중심 데이터만 필터링
-    allCorpStats = rawCorpStats.filter(s => s.corp_name !== "케이펙");
-    allAlerts = rawAlerts.filter(a => a.corp !== "케이펙");
-    allInspections = rawInspections.filter(i => i.corp !== "케이펙");
+    allCorpStats = rawCorpStats.filter(s => s && s.corp_name !== "케이펙");
+    allAlerts = rawAlerts.filter(a => a && a.corp !== "케이펙");
+    allInspections = rawInspections.filter(i => i && i.corp !== "케이펙");
 
     updateHeaderAndBanner();
     renderKPIs();
     renderAlerts();
+    renderHomeUpcomingEvents();
     renderInspectionsTable();
     renderCorpCards();
     renderNotices();
     renderChart();
     renderPeriodicChecklist();
-  renderIsoChecklist();
+    renderIsoChecklist();
 
     lucide.createIcons();
     if (!isSilent) console.log("대시보드 데이터 갱신 완료 (케이프라이드 · 보담 2사 체계)");
@@ -76,18 +77,22 @@ async function refreshDashboard() {
 
 // 상단 헤더 및 긴급 배너 업데이트
 function updateHeaderAndBanner() {
-  if (siteConfig.system_name) {
-    document.getElementById("header-system-title").textContent = siteConfig.system_name;
+  const headerSysTitle = document.getElementById("header-system-title");
+  if (headerSysTitle && siteConfig?.system_name) {
+    headerSysTitle.textContent = siteConfig.system_name;
   }
-  document.getElementById("header-subtitle").textContent = "(주)케이프라이드 · (주)보담";
+  const headerSub = document.getElementById("header-subtitle");
+  if (headerSub) {
+    headerSub.textContent = "(주)케이프라이드 · (주)보담";
+  }
 
   const banner = document.getElementById("top-urgent-banner");
   const bannerText = document.getElementById("banner-text");
-  if (siteConfig.urgent_notice && siteConfig.urgent_notice.trim() !== "") {
+  if (bannerText && siteConfig?.urgent_notice && siteConfig.urgent_notice.trim() !== "") {
     bannerText.textContent = siteConfig.urgent_notice;
-    banner.classList.remove("hidden");
+    banner?.classList.remove("hidden");
   } else {
-    banner.classList.add("hidden");
+    banner?.classList.add("hidden");
   }
 }
 
@@ -122,6 +127,7 @@ function setCompanyFilter(corp) {
 
   renderKPIs();
   renderAlerts();
+  renderHomeUpcomingEvents();
   renderInspectionsTable();
   renderCorpCards();
   renderCalendar();
@@ -240,6 +246,51 @@ function renderAlerts() {
   lucide.createIcons();
 }
 
+// 📅 홈 화면용: 11·12월 법정 안전 일정 하이라이트 요약 렌더링
+function renderHomeUpcomingEvents() {
+  const container = document.getElementById("home-upcoming-events");
+  if (!container) return;
+
+  const events = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.calendarEvents) || [];
+  const filtered = selectedCorp === "ALL"
+    ? events
+    : events.filter(e => e.corp.includes(selectedCorp) || e.corp.includes("전 법인") || e.corp.includes("공통"));
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">예정된 일정이 없습니다.</div>`;
+    return;
+  }
+
+  const badgeMap = {
+    critical: { text: "긴급", class: "bg-rose-100 text-rose-700 border-rose-200" },
+    warning: { text: "주의", class: "bg-amber-100 text-amber-800 border-amber-200" },
+    info: { text: "안내", class: "bg-sky-100 text-sky-700 border-sky-200" }
+  };
+
+  container.innerHTML = filtered.slice(0, 4).map(ev => `
+    <div onclick="switchPortalTab('calendar'); selectCalendarDate('${ev.date}');" 
+      class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-emerald-300 hover:shadow-xs transition cursor-pointer flex flex-col justify-between space-y-2">
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeMap[ev.type]?.class || badgeMap.info.class}">
+            ${badgeMap[ev.type]?.text || "법정"}
+          </span>
+          <span class="text-[11px] font-bold text-rose-600 font-mono">${escapeHtml(ev.ddayText || '')}</span>
+        </div>
+        <div class="text-[10px] font-semibold text-slate-500">${escapeHtml(ev.corp)} &bull; <span class="font-mono text-emerald-700 font-bold">${ev.date}</span></div>
+        <h4 class="font-bold text-xs text-slate-900 leading-snug truncate" title="${escapeHtml(ev.title)}">${escapeHtml(ev.title)}</h4>
+        <p class="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">${escapeHtml(ev.desc)}</p>
+      </div>
+      <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-emerald-600 font-bold">
+        <span>조치 요령 보기</span>
+        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+      </div>
+    </div>
+  `).join("");
+
+  lucide.createIcons();
+}
+
 // 2사 법인 카드 렌더링 (케이펙 제외)
 function renderCorpCards() {
   const container = document.getElementById("corp-cards-container");
@@ -337,13 +388,23 @@ function openNoticeModal(id) {
   const notice = allNotices.find(n => n.id === id);
   if (!notice) return;
 
-  document.getElementById("modal-notice-target").textContent = notice.corp || "전 법인";
-  document.getElementById("modal-notice-title").textContent = notice.title;
-  document.getElementById("modal-notice-author").textContent = notice.author || "안전관리자";
-  document.getElementById("modal-notice-date").textContent = notice.date || "-";
-  document.getElementById("modal-notice-content").textContent = notice.content || "";
+  const corpEl = document.getElementById("modal-notice-corp") || document.getElementById("modal-notice-target");
+  if (corpEl) corpEl.textContent = notice.corp || "전 법인";
 
-  document.getElementById("notice-detail-modal").classList.remove("hidden");
+  const titleEl = document.getElementById("modal-notice-title");
+  if (titleEl) titleEl.textContent = notice.title || "";
+
+  const authorEl = document.getElementById("modal-notice-author");
+  if (authorEl) authorEl.textContent = notice.author || "안전관리자";
+
+  const dateEl = document.getElementById("modal-notice-date");
+  if (dateEl) dateEl.textContent = notice.date || "-";
+
+  const contentEl = document.getElementById("modal-notice-content");
+  if (contentEl) contentEl.textContent = notice.content || "";
+
+  const modal = document.getElementById("notice-detail-modal");
+  if (modal) modal.classList.remove("hidden");
   lucide.createIcons();
 }
 
@@ -586,7 +647,7 @@ function renderPeriodicChecklist() {
 // ==============================================
 
 function openLawModal() {
-  const container = document.getElementById("law-changes-list");
+  const container = document.getElementById("law-modal-body") || document.getElementById("law-changes-list");
   if (!container || !window.SAFETY_TIPS_DATA) return;
 
   const list = window.SAFETY_TIPS_DATA.lawChanges || [];
@@ -626,89 +687,90 @@ function openLawModal() {
     </div>
   `).join("");
 
-  document.getElementById("law-modal").classList.remove("hidden");
+  document.getElementById("law-modal")?.classList.remove("hidden");
   lucide.createIcons();
 }
 
 function closeLawModal() {
-  document.getElementById("law-modal").classList.add("hidden");
+  document.getElementById("law-modal")?.classList.add("hidden");
 }
 
 function openTipsModal() {
-  const tipsContainer = document.getElementById("practical-tips-list");
-  const deadlineTbody = document.getElementById("deadline-guide-tbody");
-  if (!tipsContainer || !window.SAFETY_TIPS_DATA) return;
+  const container = document.getElementById("tips-modal-body") || document.getElementById("practical-tips-list");
+  if (!container || !window.SAFETY_TIPS_DATA) return;
 
   const deadlines = window.SAFETY_TIPS_DATA.deadlineGuide || [];
-  deadlineTbody.innerHTML = deadlines.map(d => `
-    <tr class="hover:bg-rose-50/40">
-      <td class="py-1.5 px-2 font-bold text-slate-900">${escapeHtml(d.target)}</td>
-      <td class="py-1.5 px-2 font-semibold text-rose-700 font-mono">${escapeHtml(d.deadline)}</td>
-      <td class="py-1.5 px-2 text-slate-800 font-medium">${escapeHtml(d.penalty)}</td>
-      <td class="py-1.5 px-2 text-slate-500">${escapeHtml(d.authority)}</td>
-    </tr>
-  `).join("");
-
   const tips = window.SAFETY_TIPS_DATA.practicalTips || [];
-  tipsContainer.innerHTML = tips.map((tip, idx) => `
-    <div class="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-xs">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <span class="w-6 h-6 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-xs">${idx + 1}</span>
-          <h4 class="font-bold text-sm text-slate-900">${escapeHtml(tip.domain)} 실무 팁</h4>
+
+  container.innerHTML = `
+    <div class="space-y-4">
+      <div class="bg-rose-50/50 p-4 rounded-xl border border-rose-100 space-y-2">
+        <h4 class="font-bold text-xs text-rose-900 flex items-center gap-1.5">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+          <span>법정 의무 보고 및 신고 기한 가이드 (위반 시 과태료 직결)</span>
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-[11px]">
+            <thead class="bg-rose-100/60 text-rose-800 font-bold">
+              <tr>
+                <th class="p-2">보고 항목</th>
+                <th class="p-2">법정 기한</th>
+                <th class="p-2">미보고 시 과태료</th>
+                <th class="p-2">제출처</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rose-100/80">
+              ${deadlines.map(d => `
+                <tr class="hover:bg-white/80">
+                  <td class="p-2 font-bold text-slate-800">${escapeHtml(d.target)}</td>
+                  <td class="p-2 font-semibold text-rose-600 font-mono">${escapeHtml(d.deadline)}</td>
+                  <td class="p-2 text-slate-700">${escapeHtml(d.penalty)}</td>
+                  <td class="p-2 text-slate-500">${escapeHtml(d.authority)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
         </div>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">${escapeHtml(tip.badge)}</span>
       </div>
 
-      <div class="text-xs font-bold text-slate-800 bg-sky-50/50 p-2.5 rounded-lg border border-sky-100">
-        📌 ${escapeHtml(tip.summary)}
-      </div>
-
-      <div class="space-y-2 text-xs">
-        <div class="p-2.5 bg-red-50/60 border border-red-100 rounded-lg text-red-900">
-          <strong class="text-red-950 flex items-center gap-1 mb-0.5">
-            <i data-lucide="x-circle" class="w-3.5 h-3.5 text-red-500"></i> 초보자가 가장 많이 하는 실수:
-          </strong>
-          <p class="leading-relaxed text-[11px]">${escapeHtml(tip.mistake)}</p>
-        </div>
-
-        <div class="p-2.5 bg-emerald-50/60 border border-emerald-100 rounded-lg text-emerald-900">
-          <strong class="text-emerald-950 flex items-center gap-1 mb-0.5">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i> 올바른 해결 실무 절차:
-          </strong>
-          <p class="leading-relaxed text-[11px]">${escapeHtml(tip.solution)}</p>
-        </div>
-      </div>
-
-      <div class="pt-2 border-t border-slate-100">
-        <span class="text-[11px] font-bold text-slate-500 mb-1 block">✅ 필수 인수인계 체크리스트:</span>
-        <ul class="list-disc list-inside space-y-0.5 text-[11px] text-slate-600 pl-1">
-          ${tip.checklist.map(c => `<li>${escapeHtml(c)}</li>`).join("")}
-        </ul>
+      <div class="space-y-3">
+        <h4 class="font-bold text-xs text-slate-800">현장 실무 팁 & 노하우</h4>
+        ${tips.map(t => `
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-900">${escapeHtml(t.title)}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">${escapeHtml(t.badge || '실무팁')}</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(t.desc)}</p>
+          </div>
+        `).join("")}
       </div>
     </div>
-  `).join("");
+  `;
 
-  document.getElementById("tips-modal").classList.remove("hidden");
+  document.getElementById("tips-modal")?.classList.remove("hidden");
   lucide.createIcons();
 }
 
 function closeTipsModal() {
-  document.getElementById("tips-modal").classList.add("hidden");
+  document.getElementById("tips-modal")?.classList.add("hidden");
 }
 
 // 최근 수정된 로컬 업무 서류 감시 (run_dashboard.py의 /api/recent-files 연동)
 async function loadRecentFiles() {
   const container = document.getElementById("recent-files-list");
   const badge = document.getElementById("local-api-status");
+  if (!container) return;
 
   try {
     const res = await fetch("/api/recent-files");
     if (!res.ok) throw new Error("API 비활성");
     const json = await res.json();
     
-    badge.textContent = `실시간 연동 (${json.files.length}건)`;
-    badge.className = "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-semibold";
+    if (badge) {
+      badge.textContent = `실시간 연동 (${json.files.length}건)`;
+      badge.className = "text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-semibold";
+    }
 
     if (!json.files || !json.files.length) {
       container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">최근 수정된 서류가 없습니다.</div>`;
@@ -725,8 +787,12 @@ async function loadRecentFiles() {
       </div>
     `).join("");
   } catch (e) {
-    badge.textContent = "클라우드 모드";
-    badge.className = "text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold";
+    if (badge) {
+      badge.textContent = "클라우드 모드";
+      badge.className = "text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold";
+    }
+  }
+}
     
     const fallbackFiles = [
       { name: "특수건강진단 사전조사 및 실시계획서-케이프라이드.pdf", date: "2026-10-30 15:48" },
@@ -956,54 +1022,12 @@ function scrollToIsoSection() {
 }
 
 function openIsoModal() {
-  const modalContainer = document.getElementById("iso-modal-checklist-container");
-  const modalProgress = document.getElementById("iso-modal-progress");
-  if (!modalContainer || !window.SAFETY_TIPS_DATA?.isoData) return;
-
-  const list = window.SAFETY_TIPS_DATA.isoData.checklists || [];
-  const checked = getIsoCheckedItems();
-
-  const doneCount = list.filter(i => checked.includes(i.id)).length;
-  modalProgress.textContent = `진행도: ${doneCount}/${list.length} (${Math.round((doneCount / list.length) * 100)}%)`;
-
-  modalContainer.innerHTML = list.map(item => {
-    const isDone = checked.includes(item.id);
-    return `
-      <div class="p-3 rounded-xl border ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-xs'} text-xs space-y-1.5">
-        <div class="flex items-start justify-between gap-2">
-          <label class="flex items-start gap-2 cursor-pointer select-none flex-1">
-            <input type="checkbox" onchange="handleModalIsoCheck('${item.id}')" ${isDone ? 'checked' : ''}
-              class="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}">${escapeHtml(item.title)}</span>
-                ${isDone ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">완료</span>' : ''}
-              </div>
-              <p class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(item.desc)}</p>
-            </div>
-          </label>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${item.badge.includes('긴급') ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-700'} shrink-0">
-            ${escapeHtml(item.badge)}
-          </span>
-        </div>
-        <div class="p-2 bg-emerald-50/70 border border-emerald-100 rounded text-[11px] text-emerald-950">
-          ${escapeHtml(item.tip)}
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  document.getElementById("iso-detail-modal").classList.remove("hidden");
-  lucide.createIcons();
-}
-
-function handleModalIsoCheck(id) {
-  handleIsoCheckItem(id);
-  openIsoModal(); // 모달 내 목록 다시 그리기
+  switchPortalTab('iso45001');
 }
 
 function closeIsoModal() {
-  document.getElementById("iso-detail-modal").classList.add("hidden");
+  const modal = document.getElementById("iso-detail-modal");
+  if (modal) modal.classList.add("hidden");
 }
 
 // ==========================================
