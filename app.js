@@ -60,6 +60,10 @@ async function loadDashboardData(isSilent = false) {
     renderChart();
     renderPeriodicChecklist();
     renderIsoChecklist();
+    if (siteConfig && siteConfig.show_org_contacts) {
+      isOrgContactsUnlocked = true;
+    }
+    renderOrganizationChart();
 
     lucide.createIcons();
     if (!isSilent) console.log("대시보드 데이터 갱신 완료 (케이프라이드 · 보담 2사 체계)");
@@ -1235,6 +1239,7 @@ let currentPortalTab = 'dashboard';
 
 const PORTAL_TAB_TITLES = {
   dashboard: '종합 관제 대시보드',
+  organization: '안전보건관리체계도 & 비상대응체계',
   calendar: '월간 법정 안전 캘린더',
   checklist: '주기별 점검 & TBM 체크리스트',
   iso45001: 'ISO 45001 경영센터',
@@ -1251,7 +1256,7 @@ function switchPortalTab(tabId) {
   }
 
   // 2. 뷰 컨테이너 토글
-  const views = ["dashboard", "calendar", "checklist", "iso45001", "forms"];
+  const views = ["dashboard", "organization", "calendar", "checklist", "iso45001", "forms"];
   views.forEach(v => {
     const el = document.getElementById(`portal-view-${v}`);
     if (el) {
@@ -1274,7 +1279,9 @@ function switchPortalTab(tabId) {
   });
 
   // 4. 모듈별 동적 렌더러 호출
-  if (tabId === "calendar") {
+  if (tabId === "organization") {
+    renderOrganizationChart();
+  } else if (tabId === "calendar") {
     renderCalendar();
   } else if (tabId === "forms") {
     renderFormsHub();
@@ -1637,3 +1644,424 @@ ${form.items.map((it, idx) => `${idx + 1}. ${it}`).join("\n")}
     alert("클립보드 복사 권한이 제한되어 있습니다. [A4 즉시 인쇄] 기능을 이용해 주세요.");
   });
 }
+
+// ==============================================
+// 9. 안전보건관리체계도 & 비상대응체계 (조직도 & 비상연락망)
+// ==============================================
+let currentOrgCorp = 'kpride'; // 'kpride' | 'bodam' | 'emergency'
+let isOrgContactsUnlocked = false;
+
+function maskPhoneNumber(phone, isUnlocked) {
+  if (!phone) return "-";
+  if (isUnlocked) {
+    return `<a href="tel:${phone}" class="text-sky-600 hover:text-sky-800 hover:underline font-mono font-bold flex items-center gap-1">
+      <i data-lucide="phone" class="w-3 h-3 text-sky-500 shrink-0"></i>
+      <span>${escapeHtml(phone)}</span>
+    </a>`;
+  }
+  if (phone.length <= 4) {
+    return `<span class="font-mono font-bold text-slate-800">${escapeHtml(phone)}</span>`;
+  }
+  const masked = phone.replace(/(\d{2,3})-(\d{3,4})-(\d{4})/, (m, p1, p2, p3) => {
+    return `${p1}-${'*'.repeat(p2.length)}-${p3}`;
+  });
+  return `<span class="font-mono text-slate-500 font-medium flex items-center gap-1" title="관리자 PIN 인증 또는 관리자페이지 설정 후 확인 가능">
+    <span>${escapeHtml(masked)}</span>
+    <i data-lucide="lock" class="w-3 h-3 text-amber-500/70 shrink-0"></i>
+  </span>`;
+}
+
+function switchOrgCorp(corp) {
+  currentOrgCorp = corp;
+
+  // 버튼 스타일 전환
+  const btnKp = document.getElementById("btn-org-kpride");
+  const btnBd = document.getElementById("btn-org-bodam");
+  const btnEm = document.getElementById("btn-org-emergency");
+
+  const activeCls = "org-tab-btn px-3 py-1.5 rounded-lg bg-sky-600 text-white shadow-xs transition";
+  const inactiveCls = "org-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+
+  if (btnKp) btnKp.className = corp === 'kpride' ? activeCls : inactiveCls;
+  if (btnBd) btnBd.className = corp === 'bodam' ? activeCls : inactiveCls;
+  if (btnEm) btnEm.className = corp === 'emergency' 
+    ? "org-tab-btn px-3 py-1.5 rounded-lg bg-rose-600 text-white shadow-xs transition flex items-center gap-1" 
+    : "org-tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1";
+
+  renderOrganizationChart();
+}
+window.switchOrgCorp = switchOrgCorp;
+
+function renderOrganizationChart() {
+  const securityBanner = document.getElementById("org-contact-security-banner");
+  const chartContainer = document.getElementById("org-chart-container");
+  if (!chartContainer) return;
+
+  const orgData = window.SAFETY_TIPS_DATA?.safetyOrgData;
+  if (!orgData) {
+    chartContainer.innerHTML = `<div class="p-8 text-center text-slate-400">안전보건관리체계도 데이터를 불러올 수 없습니다.</div>`;
+    return;
+  }
+
+  // 관리자 설정에서 상시 해제 여부 확인
+  const isUnlocked = isOrgContactsUnlocked || !!siteConfig?.show_org_contacts;
+
+  // 1. 보안 마스킹 안내 배너 렌더링
+  if (securityBanner) {
+    if (isUnlocked) {
+      securityBanner.className = "p-4 rounded-xl border border-emerald-200 bg-emerald-50/70 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs";
+      securityBanner.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs text-emerald-950">비상연락망 연락처 열람 모드 (인증 완료)</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">공개 활성</span>
+            </div>
+            <p class="text-[11px] text-emerald-800 mt-0.5">실제 전화번호가 표시 중입니다. 업무 목적 외 무단 유출을 금지합니다.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="lockOrgContacts()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+            <span>다시 숨기기 (마스킹)</span>
+          </button>
+          <a href="admin.html" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-1">
+            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+            <span>관리자 설정</span>
+          </a>
+        </div>
+      `;
+    } else {
+      securityBanner.className = "p-4 rounded-xl border border-amber-200 bg-amber-50/70 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs";
+      securityBanner.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs text-amber-950">개인정보 보호 모드 (전화번호 마스킹)</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold border border-amber-200">보안 잠금</span>
+            </div>
+            <p class="text-[11px] text-amber-900/80 mt-0.5">실무자 및 관리감독자 번호가 보호되어 있습니다. 확인이 필요하신 경우 PIN 번호로 잠금 해제하세요.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="openOrgUnlockModal()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
+            <span>연락처 잠금 해제</span>
+          </button>
+          <a href="admin.html" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-1">
+            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+            <span>관리자 설정</span>
+          </a>
+        </div>
+      `;
+    }
+  }
+
+  // 2. 비상연락망 모드 렌더링
+  if (currentOrgCorp === 'emergency') {
+    const list = orgData.emergencyContacts || [];
+    chartContainer.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+              <i data-lucide="phone-forwarded" class="w-4 h-4 text-rose-500"></i>
+              <span>법정 유관기관 및 비상연락망 (이해관계자 네트워크)</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">화재·응급, 관공서 인허가, 안전·보건 위탁대행 및 설비 긴급 A/S 연락망</p>
+          </div>
+          <span class="text-xs font-mono font-bold text-slate-500">총 ${list.length}개 기관</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+          ${list.map(c => `
+            <div class="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-2xs transition flex flex-col justify-between space-y-2">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-700">${escapeHtml(c.category)}</span>
+                  ${maskPhoneNumber(c.phone, isUnlocked)}
+                </div>
+                <h4 class="font-bold text-xs sm:text-sm text-slate-900 mt-1">${escapeHtml(c.name)}</h4>
+                <p class="text-[11px] text-slate-600 leading-relaxed">${escapeHtml(c.desc)}</p>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  // 3. 법인 체계도 (케이프라이드 or 보담)
+  const d = orgData[currentOrgCorp];
+  if (!d) return;
+
+  chartContainer.innerHTML = `
+    <!-- 법인 안내 배너 -->
+    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div>
+        <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+          <i data-lucide="building-2" class="w-4 h-4 text-sky-600"></i>
+          <span>${escapeHtml(d.corpName)} 안전보건관리체계 조직도</span>
+        </h3>
+        <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(d.workplace)} &bull; ${escapeHtml(d.description)}</p>
+      </div>
+      <div class="text-[11px] text-slate-500 font-mono">
+        법정 관리감독자 <span class="font-bold text-sky-700 font-mono">${d.supervisors.length}명</span> 지정 완비
+      </div>
+    </div>
+
+    <!-- 계통도 비주얼 하이어라키 (Visual Organization Tree) -->
+    <div class="space-y-4">
+      
+      <!-- LEVEL 1: 경영책임자 (사업주 / 대표이사) -->
+      <div class="max-w-md mx-auto">
+        <div class="p-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm border border-slate-700 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-amber-400 text-slate-950 rounded-full">Top Decision Maker</span>
+            <div class="text-xs">${maskPhoneNumber(d.leader.phone, isUnlocked)}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <h4 class="text-base font-extrabold">${escapeHtml(d.leader.name)}</h4>
+            <span class="text-xs text-slate-300 font-semibold">${escapeHtml(d.leader.title)}</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed border-t border-slate-700/80 pt-2">
+            ${escapeHtml(d.leader.role)}
+          </p>
+        </div>
+      </div>
+
+      <!-- 연결 화살표 -->
+      <div class="flex justify-center text-slate-300">
+        <i data-lucide="arrow-down" class="w-5 h-5"></i>
+      </div>
+
+      <!-- LEVEL 2: 안전보건관리책임자 (총괄) -->
+      <div class="max-w-md mx-auto">
+        <div class="p-4 bg-gradient-to-br from-sky-700 to-sky-900 text-white rounded-2xl shadow-sm border border-sky-600 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold tracking-wider px-2 py-0.5 bg-white text-sky-900 rounded-full font-mono">산안법 제15조 책임자</span>
+            <div class="text-xs">${maskPhoneNumber(d.safetyDirector.phone, isUnlocked)}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <h4 class="text-base font-extrabold">${escapeHtml(d.safetyDirector.name)}</h4>
+            <span class="text-xs text-sky-200 font-semibold">${escapeHtml(d.safetyDirector.title)}</span>
+          </div>
+          <p class="text-[11px] text-sky-100 leading-relaxed border-t border-sky-800 pt-2">
+            ${escapeHtml(d.safetyDirector.role)}
+          </p>
+        </div>
+      </div>
+
+      <!-- 연결 화살표 -->
+      <div class="flex justify-center text-slate-300">
+        <i data-lucide="arrow-down" class="w-5 h-5"></i>
+      </div>
+
+      <!-- LEVEL 3: 외부 전문 위탁기관 (기술지도/자문) & 사내 실무 전담 조직 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- 좌측: 외부 전문 위탁기관 -->
+        <div class="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <h5 class="font-bold text-xs sm:text-sm text-indigo-950 flex items-center gap-1.5">
+              <i data-lucide="stethoscope" class="w-4 h-4 text-indigo-600"></i>
+              <span>외부 전문 위탁기관 (법정 대행)</span>
+            </h5>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold border border-indigo-200">산안법 제17·18조</span>
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            ${d.agencies.map(ag => `
+              <div class="p-3 bg-white rounded-xl border border-indigo-100 shadow-2xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-800">${escapeHtml(ag.type)}</span>
+                  <span class="text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-semibold font-mono">${escapeHtml(ag.cycle)}</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-slate-600 font-medium">${escapeHtml(ag.orgName)} (${escapeHtml(ag.person)})</span>
+                  ${maskPhoneNumber(ag.phone, isUnlocked)}
+                </div>
+                <p class="text-[11px] text-slate-500 leading-tight">${escapeHtml(ag.role)}</p>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <!-- 우측: 사내 안전보건 실무 전담 -->
+        <div class="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <h5 class="font-bold text-xs sm:text-sm text-amber-950 flex items-center gap-1.5">
+              <i data-lucide="clipboard-list" class="w-4 h-4 text-amber-600"></i>
+              <span>사내 안전보건 실무 전담 조직</span>
+            </h5>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold border border-amber-200">실무 기획·운영</span>
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            ${d.internalStaff.map(st => `
+              <div class="p-3 bg-white rounded-xl border border-amber-100 shadow-2xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-800">${escapeHtml(st.title)}</span>
+                  <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-semibold">${escapeHtml(st.dept)}</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-slate-600 font-medium">${escapeHtml(st.name)}</span>
+                  ${maskPhoneNumber(st.phone, isUnlocked)}
+                </div>
+                <p class="text-[11px] text-slate-500 leading-tight">${escapeHtml(st.role)}</p>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+
+      <!-- 연결 화살표 -->
+      <div class="flex justify-center text-slate-300">
+        <i data-lucide="arrow-down" class="w-5 h-5"></i>
+      </div>
+
+      <!-- LEVEL 4: 관리감독자 라인 (공정별/부서별 산안법 제16조) -->
+      <div class="p-5 bg-white rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h5 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4 text-sky-600"></i>
+              <span>공정별·부서별 관리감독자 현황 (산안법 제16조)</span>
+            </h5>
+            <p class="text-xs text-slate-500 mt-0.5">작업 전 TBM 진행, 방호장치 및 기계설비 점검, 보호구 착용 지도 및 위험성평가 참여</p>
+          </div>
+          <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+            연간 법정의무교육 <strong class="text-sky-700">16시간</strong> 이수 대상
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+          ${d.supervisors.map(sp => `
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 hover:bg-white hover:border-slate-300 hover:shadow-2xs transition space-y-2 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-slate-900 text-xs">${escapeHtml(sp.dept)}</span>
+                  <span class="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded">${escapeHtml(sp.role || '감독')}</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] mb-2 font-medium">
+                  <span class="text-slate-700">${escapeHtml(sp.name)}</span>
+                  ${maskPhoneNumber(sp.phone, isUnlocked)}
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed border-t border-slate-200/60 pt-2">
+                  ${escapeHtml(sp.task)}
+                </p>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- 연결 화살표 -->
+      <div class="flex justify-center text-slate-300">
+        <i data-lucide="arrow-down" class="w-5 h-5"></i>
+      </div>
+
+      <!-- LEVEL 5: 현장 근로자 및 사내 수급업체 도급관리 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- 사내 현장 근로자 -->
+        <div class="md:col-span-2 p-4 bg-slate-900 text-white rounded-2xl flex flex-col justify-between space-y-3">
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400">최종 실행 조직</span>
+              <span class="text-xs font-mono font-bold text-amber-400">재적 ${d.workersCount}명</span>
+            </div>
+            <h5 class="font-bold text-base text-white">현장 근로자 안전보건 실천 체계</h5>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              작업 시작 전 10분 TBM(툴박스미팅) 필참 &bull; 작업별 필수 개인보호구(위생화, 안전모, 방검장갑 등) 100% 착용 &bull; 설비 이상 및 아차사고 즉시 관리감독자 보고 &bull; 위험작업 시 <strong>작업중지권</strong> 보장
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-slate-400 border-t border-slate-800 pt-2.5">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+            <span>정기안전보건교육 반기 12시간(생산·물류) / 6시간(사무) 이수</span>
+          </div>
+        </div>
+
+        <!-- 사내 수급(도급)업체 -->
+        <div class="p-4 bg-purple-50 rounded-2xl border border-purple-200 flex flex-col justify-between space-y-3">
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-700">사내 도급 관리</span>
+              <span class="text-xs font-mono font-bold text-purple-900">${d.contractors[0]?.count || '-'}명</span>
+            </div>
+            <h5 class="font-bold text-sm text-purple-950">${escapeHtml(d.contractors[0]?.name || '도급업체')}</h5>
+            <p class="text-[11px] text-purple-900/80 leading-relaxed">
+              ${escapeHtml(d.contractors[0]?.task || '도급작업 안전관리')}
+            </p>
+          </div>
+          <div class="text-[10px] text-purple-700 font-semibold bg-white p-2 rounded-lg border border-purple-200">
+            도급 안전보건협의체 (월 1회) &bull; 합동점검 (분기 1회) 완비
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  lucide.createIcons();
+}
+window.renderOrganizationChart = renderOrganizationChart;
+
+// 모달 제어 함수
+function openOrgUnlockModal() {
+  const modal = document.getElementById("org-contact-pin-modal");
+  const input = document.getElementById("org-unlock-pin-input");
+  const err = document.getElementById("org-unlock-error-msg");
+  if (modal) modal.classList.remove("hidden");
+  if (input) {
+    input.value = "";
+    if (typeof input.focus === 'function') input.focus();
+  }
+  if (err) err.classList.add("hidden");
+  lucide.createIcons();
+}
+window.openOrgUnlockModal = openOrgUnlockModal;
+
+function closeOrgUnlockModal() {
+  const modal = document.getElementById("org-contact-pin-modal");
+  if (modal) modal.classList.add("hidden");
+}
+window.closeOrgUnlockModal = closeOrgUnlockModal;
+
+function verifyOrgUnlockPin() {
+  const input = document.getElementById("org-unlock-pin-input");
+  const err = document.getElementById("org-unlock-error-msg");
+  const enteredPin = (input && typeof input.value === 'string') ? input.value.trim() : "";
+  const correctPin = siteConfig?.admin_pin || "1234";
+
+  if (enteredPin === correctPin) {
+    isOrgContactsUnlocked = true;
+    closeOrgUnlockModal();
+    renderOrganizationChart();
+  } else {
+    if (err) {
+      err.textContent = "❌ 보안 PIN 번호가 일치하지 않습니다. (기본값: 1234)";
+      err.classList.remove("hidden");
+    }
+    if (input) {
+      input.classList.add("border-rose-500");
+      if (typeof input.focus === 'function') input.focus();
+    }
+  }
+}
+window.verifyOrgUnlockPin = verifyOrgUnlockPin;
+
+function lockOrgContacts() {
+  isOrgContactsUnlocked = false;
+  renderOrganizationChart();
+}
+window.lockOrgContacts = lockOrgContacts;

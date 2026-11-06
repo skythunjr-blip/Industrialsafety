@@ -35,7 +35,8 @@ const DEFAULT_SITE_CONFIG = {
   urgent_notice: "🚨 2026년 하반기 정부합동 안전보건 이행점검 대비 - 각 법인별 법정 점검필증 및 위탁서류 편철 필수",
   base_date: "2026-11-05",
   admin_pin: "1234",
-  auto_refresh_sec: 30
+  auto_refresh_sec: 30,
+  show_org_contacts: false
 };
 
 const DEFAULT_ALERTS = [
