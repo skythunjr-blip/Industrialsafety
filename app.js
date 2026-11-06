@@ -793,28 +793,6 @@ async function loadRecentFiles() {
     }
   }
 }
-    
-    const fallbackFiles = [
-      { name: "특수건강진단 사전조사 및 실시계획서-케이프라이드.pdf", date: "2026-10-30 15:48" },
-      { name: "2026년 특수건강진단 신청서-케이프라이드.pdf", date: "2026-10-29 16:33" },
-      { name: "산재근로자내역-인사-2026.pages", date: "2026-10-28 12:57" },
-      { name: "F-I011-01(Rev.04) 인증계획 확인서_(주)보담_2026.pdf", date: "2026-10-28 09:47" },
-      { name: "소음 청력검사 실시 관련 협조.hwp", date: "2026-10-28 09:44" }
-    ];
-
-    container.innerHTML = fallbackFiles.map(f => `
-      <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs">
-        <div class="flex items-center gap-2 truncate">
-          <i data-lucide="file-text" class="w-4 h-4 text-sky-600 shrink-0"></i>
-          <span class="font-medium text-slate-800 truncate">${escapeHtml(f.name)}</span>
-        </div>
-        <span class="text-[11px] font-mono text-slate-400 shrink-0 ml-2">${escapeHtml(f.date)}</span>
-      </div>
-    `).join("");
-  }
-
-  lucide.createIcons();
-}
 
 function escapeHtml(str) {
   if (!str) return "";
@@ -1094,7 +1072,9 @@ function switchPortalTab(tabId) {
     backdrop?.classList.add("hidden");
   }
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (typeof window.scrollTo === 'function') {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   lucide.createIcons();
 }
 
