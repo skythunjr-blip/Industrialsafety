@@ -968,3 +968,425 @@ const SAFETY_FORMS_DATA = [
 
 window.SAFETY_TIPS_DATA.calendarEvents = SAFETY_CALENDAR_EVENTS;
 window.SAFETY_TIPS_DATA.safetyForms = SAFETY_FORMS_DATA;
+
+
+// ==============================================
+// 7. 안전보건관리체계 (절차서 · 지침서 체계)
+// ==============================================
+const SAFETY_SYSTEM_DOCS = [
+  {
+    "code": "안전-G-01",
+    "title": "안전보건관리규정",
+    "kind": "지침서",
+    "clause": "산안법 제25조",
+    "description": "사업장 안전보건관리에 관한 최상위 사내 자율 규범(안전보건관리규정)",
+    "isHidden": false,
+    "subForms": []
+  },
+  {
+    "code": "안전-G-02",
+    "title": "작업장 안전조치",
+    "kind": "지침서",
+    "clause": "안전보건규칙",
+    "description": "추락, 전도, 충돌, 협착 방지 등 제조 현장 필수 안전수칙 및 조치지침",
+    "isHidden": false,
+    "subForms": []
+  },
+  {
+    "code": "안전-G-03",
+    "title": "개인보호구 지급 및 관리",
+    "kind": "지침서",
+    "clause": "산안법 제114조",
+    "description": "공정별 필수 개인보호구(안전화, 방한모, 위생복 등) 지급 기준 및 대장 관리",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-G-03-6-1",
+        "title": "보호구의 종류",
+        "isHidden": false
+      },
+      {
+        "code": "안전-G-03-6-2",
+        "title": "작업종류에 따른 보호구",
+        "isHidden": false
+      },
+      {
+        "code": "안전-G-03-6-3",
+        "title": "보호구 지급대장",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-G-04",
+    "title": "물질안전보건자료 관리",
+    "kind": "지침서",
+    "clause": "산안법 제110조",
+    "description": "화학물질 물질안전보건자료(MSDS) 비치, 경고표지 부착 및 취급자 교육",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-G-04-6-1",
+        "title": "물질안전보건자료(MSDS) 리스트",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-G-05",
+    "title": "근로자 건강진단 관리지침",
+    "kind": "지침서",
+    "clause": "산안법 제129조",
+    "description": "일반건강검진 및 특수건강진단 주기별 실시, 유소견자 사후관리 지침",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-G-06",
+    "title": "작업환경측정",
+    "kind": "지침서",
+    "clause": "산안법 제125조",
+    "description": "소음, 분진, 화학물질 등 6개월 1회 정기 작업환경측정 실시 및 개선",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-G-06-6-1",
+        "title": "작업환경측정 결과보고서",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-G-07",
+    "title": "안전작업허가",
+    "kind": "지침서",
+    "clause": "산안법 제38조",
+    "description": "화기작업, 고소작업, 밀폐공간 등 위험작업 사전 안전작업허가 승인 절차",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-G-07-6-1",
+        "title": "안전작업허가서",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-G-08",
+    "title": "밀폐공간작업 안전관리지침",
+    "kind": "지침서",
+    "clause": "안전보건규칙 618조",
+    "description": "폐수처리장, 정화조 등 밀폐공간 산소·유해가스 측정 및 환기 안전지침",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-G-09",
+    "title": "외주업체 안전관리지침",
+    "kind": "지침서",
+    "clause": "산안법 제63조",
+    "description": "사내 상주 협력업체 및 공사 외주업체 현장 출입 및 안전수칙 준수 지침",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-G-10",
+    "title": "산업재해 조사활동",
+    "kind": "지침서",
+    "clause": "산안법 제57조",
+    "description": "산업재해 발생 시 1개월 내 노동부 산재조사표 제출 및 원인조사 지침",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-G-10-6-1",
+        "title": "산업재해조사표",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-05-01",
+    "title": "리더십 및 방침관리",
+    "kind": "절차서",
+    "clause": "ISO 45001 제5.2절",
+    "description": "최고경영자의 리더십 책무, 안전보건방침 공표 및 전사적 방침 전파 절차",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-05-01-6-1",
+        "title": "안전보건방침",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-05-02",
+    "title": "안전보건조직 및 역할",
+    "kind": "절차서",
+    "clause": "ISO 45001 제5.3절",
+    "description": "안전보건관리책임자, 관리감독자 선임 및 조직별 안전보건 역할과 업무분장",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-05-02-5-1",
+        "title": "산업안전보건 조직도-수정필요",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-05-02-5-2",
+        "title": "업무분장표",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-05-02-5-3",
+        "title": "안전보건관리책임자 선임서-수정필요",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-05-02-5-4",
+        "title": "관리감독자지정서-수정필요",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-05-02-5-5",
+        "title": "안전관리자ㆍ보건관리자ㆍ산업보건의 선임 등 보고서",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-06-01",
+    "title": "위험성평가 관리 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제6.1.2절",
+    "description": "유해위험요인 파악, 정기 및 수시 위험성평가 추진체계 및 감소대책 수립 절차",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-P-06-02",
+    "title": "법규관리",
+    "kind": "절차서",
+    "clause": "ISO 45001 제6.1.3절",
+    "description": "산업안전보건법 및 관계법령 등록부 관리, 제·개정 법규 영향성 검토 및 대응",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-06-02-6-1",
+        "title": "산업안전보건법령요지",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-02-6-2",
+        "title": "법규등록부",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-02-6-3",
+        "title": "법규검토서",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-02-6-4",
+        "title": "개정법규 대응방안",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-06-03",
+    "title": "목표 및 추진계획",
+    "kind": "절차서",
+    "clause": "ISO 45001 제6.2절",
+    "description": "안전보건 목표 수립, 연간 세부 실행 추진계획서 작성 및 모니터링",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-06-03-5-1",
+        "title": "안전보건목표",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-03-5-2",
+        "title": "안전보건 추진계획서",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-03-5-3",
+        "title": "2025년 안전보건예산 편성 및 집행 내역",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-03-5-4",
+        "title": "안전보건교육 계획표",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-06-03-5-5",
+        "title": "안전보건교육 일지",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-06-04",
+    "title": "안전보건관리책임자등의 업무수행 평가 절차서",
+    "kind": "절차서",
+    "clause": "중대재해처벌법 제4조",
+    "description": "안전보건관리책임자 및 관리감독자의 업무수행 충실성 반기별 평가 절차",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-06-04-01",
+        "title": "안전보건관리책임자등 평가기준 및 평가표",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-07-01",
+    "title": "자원 및 교육훈련 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제7.2절",
+    "description": "법정 안전보건교육(정기/신규/특별/관리감독자) 연간 계획 수립 및 이행",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-P-07-02",
+    "title": "의사소통 및 문서기록관리 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제7.5절",
+    "description": "안전보건경영시스템 문서 및 기록물의 보존 연한, 등록, 배포, 폐기 절차",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-P-08-01",
+    "title": "도급 및 외주업체 안전관리 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제8.1.4절",
+    "description": "도급·수급인 적격 수급업체 평가, 안전보건협의체 및 합동점검 운영 관리",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-P-08-02",
+    "title": "비상시 대비 및 대응",
+    "kind": "절차서",
+    "clause": "ISO 45001 제8.2절",
+    "description": "비상사태(화재, 폭발, 질식, 풍수해, 지진 등) 대비 대응 및 모의훈련 실시",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-08-02-6-1",
+        "title": "화재 대피 및 피난 유도 훈련 시나리오",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-10",
+        "title": "비상훈련 모의훈련 평가표.hwp-확인필",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-2",
+        "title": "재해 발생 훈련 시나리오",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-3",
+        "title": "환경오염 방재 시나리오",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-4",
+        "title": "화재 및 폭발 시나리오",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-5",
+        "title": "풍수해 전개 시나리오",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-6",
+        "title": "지진대응 시나리오",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-7",
+        "title": "비상통제 조직도",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-8",
+        "title": "비상통제 조직별 업무분장",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-08-02-6-9",
+        "title": "비상훈련 실시 보고서.hwp-확인필",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-09-01",
+    "title": "성과측정 및 준수평가",
+    "kind": "절차서",
+    "clause": "ISO 45001 제9.1절",
+    "description": "작업장 안전순회점검, 법규준수 평가 및 계측·측정장비 교정 검사 관리",
+    "isHidden": false,
+    "subForms": [
+      {
+        "code": "안전-P-09-01-5-1",
+        "title": "성과측정 및 모니터링 기준",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-09-01-5-2",
+        "title": "성과측정 및 모니터링 체크리스트 결과보고서",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-09-01-5-3",
+        "title": "법규준수 평가서",
+        "isHidden": false
+      },
+      {
+        "code": "안전-P-09-01-5-4",
+        "title": "측정장비 관리대장",
+        "isHidden": false
+      }
+    ]
+  },
+  {
+    "code": "안전-P-09-02",
+    "title": "내부심사 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제9.2절",
+    "description": "안전보건경영시스템 적합성 및 실행효과 검증을 위한 연간 내부심사 실시",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-P-09-03",
+    "title": "경영검토 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제9.3절",
+    "description": "최고경영자 주관 안전보건경영시스템 운영실적 반기 및 연간 경영검토",
+    "isHidden": true,
+    "subForms": []
+  },
+  {
+    "code": "안전-P-10-01",
+    "title": "사고조사 및 시정조치 절차서",
+    "kind": "절차서",
+    "clause": "ISO 45001 제10.2절",
+    "description": "사고·아차사고 원인 조사, 부적합 사항에 대한 근본 시정조치 및 재발방지",
+    "isHidden": true,
+    "subForms": []
+  }
+];
+
+window.SAFETY_TIPS_DATA.systemDocs = SAFETY_SYSTEM_DOCS;

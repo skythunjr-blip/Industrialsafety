@@ -64,7 +64,16 @@
           <span class="text-[10px] bg-sky-700/80 text-white px-1.5 py-0.5 rounded font-bold">홈</span>
         </button>
 
-        <!-- 2. 안전보건 캘린더 (Option 3) -->
+        <!-- 2. 안전보건관리체계 (절차·지침) -->
+        <button onclick="switchPortalTab('systemDocs')" id="nav-btn-systemDocs" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="book-open" class="w-4 h-4 text-emerald-400"></i>
+            <span>안전보건관리체계 (절차·지침)</span>
+          </div>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold">규정</span>
+        </button>
+
+        <!-- 3. 안전보건 캘린더 (Option 3) -->
         <button onclick="switchPortalTab('calendar')" id="nav-btn-calendar" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
           <div class="flex items-center gap-2.5">
             <i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i>
@@ -373,6 +382,61 @@
               <!-- JS 동적 렌더링 -->
             </div>
           </section>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB: 안전보건관리체계 (절차서 · 지침서) (#portal-view-systemDocs) -->
+        <!-- ============================================== -->
+        <div id="portal-view-systemDocs" class="portal-tab-content hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-6">
+            
+            <!-- 헤더 컨트롤 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">ISO 45001 경영시스템</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200">중대재해처벌법 제4조</span>
+                </div>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="book-open" class="w-5 h-5 text-emerald-600"></i>
+                  <span>안전보건관리체계 (절차서 · 지침서 체계)</span>
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">산업안전보건법 및 ISO 45001 기반 절차서(P 계통) 14종 및 현장 지침서(G 계통) 10종 표준 규정 체계</p>
+              </div>
+
+              <!-- 우측: 필터 탭 & 잠금해제 버튼 -->
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- 분류 필터 -->
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                  <button onclick="setSystemDocsFilter('all')" id="btn-sysdoc-all" class="sysdoc-filter-btn px-3 py-1.5 rounded-lg bg-emerald-600 text-white shadow-xs transition">전체</button>
+                  <button onclick="setSystemDocsFilter('절차서')" id="btn-sysdoc-p" class="sysdoc-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">절차서(P)</button>
+                  <button onclick="setSystemDocsFilter('지침서')" id="btn-sysdoc-g" class="sysdoc-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">지침서(G)</button>
+                </div>
+
+                <!-- 숨김 토글/인증 버튼 -->
+                <button onclick="toggleSystemDocsUnlock()" id="btn-sysdoc-unlock" class="px-3.5 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
+                  <!-- 동적 생성 -->
+                </button>
+              </div>
+            </div>
+
+            <!-- 검색바 및 상태 통계 배너 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+              <div class="relative flex-1 max-w-md">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                <input type="text" id="sysdoc-search-input" oninput="renderSystemDocs()" placeholder="규정명, 번호(예: P-06, G-03), 조항 검색..." class="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div id="sysdoc-stats-summary" class="text-xs text-slate-600 flex items-center gap-3">
+                <!-- 동적 렌더링 -->
+              </div>
+            </div>
+
+            <!-- 본문 규정 카드 그리드 -->
+            <div id="system-docs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- JS 동적 렌더링 -->
+            </div>
+
+          </div>
         </div>
 
         <!-- ============================================== -->
@@ -720,6 +784,40 @@
       <div id="modal-notice-content" class="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 min-h-[100px] whitespace-pre-wrap"></div>
       <div class="flex justify-end pt-2">
         <button onclick="closeNoticeModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 안전보건관리체계 정리본 미배포 항목 잠금 해제 PIN 모달 -->
+  <div id="system-docs-unlock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-700 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900">정리본 미배포 규정 열람 인증</h3>
+        </div>
+        <button onclick="closeSystemDocsUnlockModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        정리본에만 보관되어 있고 산업안전 폴더에 미배포된 10개 절차서·지침서를 전체 열람하려면 관리자 보안 PIN을 입력하세요.
+      </p>
+
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-700">관리자 보안 PIN</label>
+        <input type="password" id="sysdocs-pin-input" maxlength="10" placeholder="PIN 입력 (기본값: 1234)"
+          onkeydown="if(event.key==='Enter') verifySystemDocsPin()"
+          class="w-full p-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-center tracking-widest text-base">
+        <p id="sysdocs-unlock-error" class="text-[11px] text-rose-600 font-semibold hidden"></p>
+      </div>
+
+      <div class="pt-2 flex justify-end gap-2">
+        <button onclick="closeSystemDocsUnlockModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">취소</button>
+        <button onclick="verifySystemDocsPin()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">인증 및 전체 열람</button>
       </div>
     </div>
   </div>

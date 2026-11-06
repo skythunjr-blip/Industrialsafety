@@ -60,6 +60,7 @@ async function loadDashboardData(isSilent = false) {
     renderChart();
     renderPeriodicChecklist();
     renderIsoChecklist();
+    renderSystemDocs();
 
     lucide.createIcons();
     if (!isSilent) console.log("대시보드 데이터 갱신 완료 (케이프라이드 · 보담 2사 체계)");
@@ -1053,17 +1054,30 @@ function renderRosterModalContent(year) {
             </div>
           </div>
 
-          <h6 class="font-bold text-[11px] text-slate-700 mb-2">부서/공정별 인원 및 위험도</h6>
-          <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-            ${data.kpride.departments.map(d => `
-              <div class="p-1.5 bg-white rounded border border-slate-100 flex items-center justify-between text-[11px]">
-                <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
-                <div class="flex items-center gap-2">
-                  <span class="font-mono font-bold text-sky-700">${d.count}명</span>
-                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
-                </div>
+          <!-- 옵션 B: 법정 안전 핵심 요약 -->
+          <div class="space-y-1.5 pt-1 border-t border-slate-200/60">
+            <h6 class="font-bold text-[11px] text-slate-800 flex items-center gap-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-600"></i>
+              <span>법정 선임 및 안전관리 의무 현황</span>
+            </h6>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">안전보건관리책임자</span>
+                <span class="font-bold text-slate-900 mt-0.5 text-[11px]">선임 의무 (50인↑)</span>
               </div>
-            `).join("")}
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">안전·보건관리자</span>
+                <span class="font-bold text-sky-700 mt-0.5 text-[11px]">전문기관 위탁 지도</span>
+              </div>
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">산업안전보건위원회</span>
+                <span class="font-bold text-emerald-700 mt-0.5 text-[11px]">의무 설치 (분기 1회)</span>
+              </div>
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">관리감독자</span>
+                <span class="font-bold text-slate-900 mt-0.5 text-[11px]">공정별 직장·팀장 선임</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1090,17 +1104,30 @@ function renderRosterModalContent(year) {
             </div>
           </div>
 
-          <h6 class="font-bold text-[11px] text-slate-700 mb-2">부서/공정별 인원 및 위험도</h6>
-          <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-            ${data.bodam.departments.map(d => `
-              <div class="p-1.5 bg-white rounded border border-slate-100 flex items-center justify-between text-[11px]">
-                <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
-                <div class="flex items-center gap-2">
-                  <span class="font-mono font-bold text-purple-700">${d.count}명</span>
-                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
-                </div>
+          <!-- 옵션 B: 법정 안전 핵심 요약 -->
+          <div class="space-y-1.5 pt-1 border-t border-slate-200/60">
+            <h6 class="font-bold text-[11px] text-slate-800 flex items-center gap-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-600"></i>
+              <span>법정 선임 및 안전관리 의무 현황</span>
+            </h6>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">안전보건관리책임자</span>
+                <span class="font-bold text-slate-900 mt-0.5 text-[11px]">선임 의무 (50인↑)</span>
               </div>
-            `).join("")}
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">안전·보건관리자</span>
+                <span class="font-bold text-purple-700 mt-0.5 text-[11px]">전문기관 위탁 지도</span>
+              </div>
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">산업안전보건위원회</span>
+                <span class="font-bold text-emerald-700 mt-0.5 text-[11px]">의무 설치 (분기 1회)</span>
+              </div>
+              <div class="p-2 bg-white rounded-lg border border-slate-200 flex flex-col justify-between shadow-2xs">
+                <span class="text-slate-400 font-medium">관리감독자</span>
+                <span class="font-bold text-slate-900 mt-0.5 text-[11px]">공정별 직장·팀장 선임</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1289,6 +1316,7 @@ let currentPortalTab = 'dashboard';
 
 const PORTAL_TAB_TITLES = {
   dashboard: '종합 관제 대시보드',
+  systemDocs: '안전보건관리체계 (절차서 · 지침서)',
   calendar: '월간 법정 안전 캘린더',
   checklist: '주기별 점검 & TBM 체크리스트',
   iso45001: 'ISO 45001 경영센터',
@@ -1305,7 +1333,7 @@ function switchPortalTab(tabId) {
   }
 
   // 2. 뷰 컨테이너 토글
-  const views = ["dashboard", "calendar", "checklist", "iso45001", "forms"];
+  const views = ["dashboard", "systemDocs", "calendar", "checklist", "iso45001", "forms"];
   views.forEach(v => {
     const el = document.getElementById(`portal-view-${v}`);
     if (el) {
@@ -1328,7 +1356,9 @@ function switchPortalTab(tabId) {
   });
 
   // 4. 모듈별 동적 렌더러 호출
-  if (tabId === "calendar") {
+  if (tabId === "systemDocs") {
+    renderSystemDocs();
+  } else if (tabId === "calendar") {
     renderCalendar();
   } else if (tabId === "forms") {
     renderFormsHub();
@@ -1697,3 +1727,223 @@ ${form.items.map((it, idx) => `${idx + 1}. ${it}`).join("\n")}
 }
 
 // ==============================================
+// 9. 안전보건관리체계 (절차서 · 지침서 규정 라이브러리)
+// ==============================================
+let currentSystemDocsFilter = 'all'; // 'all' | '절차서' | '지침서'
+let isSystemDocsUnlocked = false;
+
+function setSystemDocsFilter(filter) {
+  currentSystemDocsFilter = filter;
+
+  const btnAll = document.getElementById("btn-sysdoc-all");
+  const btnP = document.getElementById("btn-sysdoc-p");
+  const btnG = document.getElementById("btn-sysdoc-g");
+
+  const activeCls = "sysdoc-filter-btn px-3 py-1.5 rounded-lg bg-emerald-600 text-white shadow-xs transition";
+  const inactiveCls = "sysdoc-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+
+  if (btnAll) btnAll.className = filter === 'all' ? activeCls : inactiveCls;
+  if (btnP) btnP.className = filter === '절차서' ? activeCls : inactiveCls;
+  if (btnG) btnG.className = filter === '지침서' ? activeCls : inactiveCls;
+
+  renderSystemDocs();
+}
+window.setSystemDocsFilter = setSystemDocsFilter;
+
+function toggleSystemDocsUnlock() {
+  if (isSystemDocsUnlocked) {
+    // 다시 잠금
+    isSystemDocsUnlocked = false;
+    renderSystemDocs();
+  } else {
+    openSystemDocsUnlockModal();
+  }
+}
+window.toggleSystemDocsUnlock = toggleSystemDocsUnlock;
+
+function openSystemDocsUnlockModal() {
+  const modal = document.getElementById("system-docs-unlock-modal");
+  const input = document.getElementById("sysdocs-pin-input");
+  const err = document.getElementById("sysdocs-unlock-error");
+  if (err) err.classList.add("hidden");
+  if (input) {
+    input.value = "";
+    input.classList.remove("border-rose-500");
+  }
+  if (modal) modal.classList.remove("hidden");
+  setTimeout(() => { if (input && typeof input.focus === 'function') input.focus(); }, 100);
+}
+window.openSystemDocsUnlockModal = openSystemDocsUnlockModal;
+
+function closeSystemDocsUnlockModal() {
+  const modal = document.getElementById("system-docs-unlock-modal");
+  if (modal) modal.classList.add("hidden");
+}
+window.closeSystemDocsUnlockModal = closeSystemDocsUnlockModal;
+
+function verifySystemDocsPin() {
+  const input = document.getElementById("sysdocs-pin-input");
+  const err = document.getElementById("sysdocs-unlock-error");
+  const pin = input ? input.value.trim() : "";
+  const correctPin = siteConfig?.admin_pin || "1234";
+
+  if (pin === correctPin) {
+    isSystemDocsUnlocked = true;
+    closeSystemDocsUnlockModal();
+    renderSystemDocs();
+  } else {
+    if (err) {
+      err.textContent = "❌ 보안 PIN 번호가 일치하지 않습니다. (기본값: 1234)";
+      err.classList.remove("hidden");
+    }
+    if (input) {
+      input.classList.add("border-rose-500");
+      if (typeof input.focus === 'function') input.focus();
+    }
+  }
+}
+window.verifySystemDocsPin = verifySystemDocsPin;
+
+function renderSystemDocs() {
+  const grid = document.getElementById("system-docs-grid");
+  const statsEl = document.getElementById("sysdoc-stats-summary");
+  const unlockBtn = document.getElementById("btn-sysdoc-unlock");
+  const searchInput = document.getElementById("sysdoc-search-input");
+  if (!grid) return;
+
+  const allDocs = window.SAFETY_TIPS_DATA?.systemDocs || [];
+  const keyword = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+  // 관리자 설정에서 상시 전체 공개되어 있는지 확인
+  const isUnlocked = isSystemDocsUnlocked || !!siteConfig?.show_all_system_docs;
+
+  // 잠금/해제 버튼 렌더링
+  if (unlockBtn) {
+    if (isUnlocked) {
+      unlockBtn.className = "px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 text-xs font-bold transition flex items-center gap-1.5 hover:bg-emerald-100 shadow-2xs";
+      unlockBtn.innerHTML = `<i data-lucide="unlock" class="w-3.5 h-3.5 text-emerald-600"></i><span>전체 규정(61종) 열람 중 (잠그기)</span>`;
+    } else {
+      unlockBtn.className = "px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 text-xs font-bold transition flex items-center gap-1.5 hover:bg-amber-100 shadow-2xs";
+      unlockBtn.innerHTML = `<i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i><span>미배포 10종 숨김 중 (잠금 해제)</span>`;
+    }
+  }
+
+  // 필터링 적용
+  const filtered = allDocs.filter(doc => {
+    // 1. 숨김 처리 (미잠금 해제 상태일 때 정리본에만 있는 isHidden 항목은 완전 숨김)
+    if (!isUnlocked && doc.isHidden) {
+      return false;
+    }
+
+    // 2. 분류 필터
+    if (currentSystemDocsFilter !== 'all' && doc.kind !== currentSystemDocsFilter) {
+      return false;
+    }
+
+    // 3. 검색어 필터
+    if (keyword) {
+      const matchMain = doc.code.toLowerCase().includes(keyword) ||
+                        doc.title.toLowerCase().includes(keyword) ||
+                        (doc.clause && doc.clause.toLowerCase().includes(keyword)) ||
+                        (doc.description && doc.description.toLowerCase().includes(keyword));
+      const matchSub = (doc.subForms || []).some(sf =>
+        sf.code.toLowerCase().includes(keyword) || sf.title.toLowerCase().includes(keyword)
+      );
+      if (!matchMain && !matchSub) return false;
+    }
+
+    return true;
+  });
+
+  // 상태 요약 갱신
+  if (statsEl) {
+    const visibleMainCount = allDocs.filter(d => !d.isHidden).length;
+    const hiddenMainCount = allDocs.filter(d => d.isHidden).length;
+    statsEl.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-800">표시 규정: <strong class="text-emerald-700 font-mono">${filtered.length}</strong>개</span>
+        <span class="text-slate-300">|</span>
+        <span class="text-[11px] text-slate-500">사내 배포 <strong>${visibleMainCount}</strong>종</span>
+        <span class="text-slate-300">|</span>
+        <span class="text-[11px] ${isUnlocked ? 'text-amber-700 font-bold' : 'text-slate-400'}">정리본 미배포 <strong>${hiddenMainCount}</strong>종 ${isUnlocked ? '(열람 중)' : '(숨김)'}</span>
+      </div>
+    `;
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full p-12 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+        <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+        <p class="text-xs font-semibold">검색 조건에 맞는 규정 또는 지침서가 없습니다.</p>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  grid.innerHTML = filtered.map(doc => {
+    const isP = doc.kind === '절차서';
+    const subForms = doc.subForms || [];
+    const isHiddenItem = doc.isHidden;
+
+    return `
+      <div class="p-4 rounded-2xl border transition duration-200 flex flex-col justify-between space-y-3 ${
+        isHiddenItem 
+          ? 'bg-amber-50/40 border-amber-300 hover:border-amber-400 hover:shadow-xs' 
+          : 'bg-white border-slate-200/90 hover:border-emerald-300 hover:shadow-xs'
+      }">
+        <div class="space-y-2.5">
+          <!-- 상단 뱃지 라인 -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono text-xs font-extrabold px-2 py-0.5 rounded-md ${
+                isP ? 'bg-sky-100 text-sky-800 border border-sky-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+              }">${escapeHtml(doc.code)}</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${escapeHtml(doc.kind)}</span>
+            </div>
+            ${
+              isHiddenItem
+                ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3 text-amber-700"></i>정리본 보관본</span>'
+                : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>사내 배포본</span>'
+            }
+          </div>
+
+          <!-- 제목 & 조항 매핑 -->
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 leading-snug">${escapeHtml(doc.title)}</h4>
+            <span class="text-[11px] font-semibold text-emerald-700 font-mono mt-0.5 inline-block">${escapeHtml(doc.clause)}</span>
+          </div>
+
+          <!-- 설명 -->
+          <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(doc.description)}</p>
+
+          <!-- 부속 서식 목록 (있는 경우) -->
+          ${subForms.length > 0 ? `
+            <div class="pt-2 border-t border-slate-100 space-y-1.5">
+              <span class="text-[10px] font-bold text-slate-400 block tracking-wider uppercase">부속 서식 및 양식 (${subForms.length}종)</span>
+              <div class="space-y-1 max-h-36 overflow-y-auto pr-1">
+                ${subForms.map(sf => `
+                  <div class="p-1.5 bg-slate-50 rounded-lg border border-slate-200/60 text-[10px] text-slate-700 flex items-center justify-between">
+                    <span class="font-mono text-slate-500 font-semibold truncate mr-2">${escapeHtml(sf.code)}</span>
+                    <span class="font-medium text-slate-900 truncate text-right flex-1">${escapeHtml(sf.title)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <span class="text-slate-400 text-[10px]">${isP ? '표준 절차서' : '현장 실무지침'}</span>
+          <span class="font-semibold text-emerald-600 flex items-center gap-1">
+            <span>체계 규정</span>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+          </span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  lucide.createIcons();
+}
+window.renderSystemDocs = renderSystemDocs;

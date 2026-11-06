@@ -646,10 +646,16 @@ function fillSiteConfigForm() {
   document.getElementById("cfg-urgent-notice").value = currentSiteConfig.urgent_notice || "";
   document.getElementById("cfg-base-date").value = currentSiteConfig.base_date || "2026-11-05";
   document.getElementById("cfg-admin-pin").value = currentSiteConfig.admin_pin || "1234";
+
+  const chkSystemDocs = document.getElementById("cfg-show-system-docs");
+  if (chkSystemDocs) {
+    chkSystemDocs.checked = !!currentSiteConfig.show_all_system_docs;
+  }
 }
 
 async function saveSiteConfig(e) {
   e.preventDefault();
+  const chkSystemDocs = document.getElementById("cfg-show-system-docs");
 
   currentSiteConfig = {
     ...currentSiteConfig,
@@ -657,7 +663,8 @@ async function saveSiteConfig(e) {
     subtitle: document.getElementById("cfg-subtitle").value.trim(),
     urgent_notice: document.getElementById("cfg-urgent-notice").value.trim(),
     base_date: document.getElementById("cfg-base-date").value,
-    admin_pin: document.getElementById("cfg-admin-pin").value.trim() || "1234"
+    admin_pin: document.getElementById("cfg-admin-pin").value.trim() || "1234",
+    show_all_system_docs: chkSystemDocs ? chkSystemDocs.checked : false
   };
 
   const res = await SafetyDB.updateSiteConfig(currentSiteConfig);
