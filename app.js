@@ -11,6 +11,10 @@ let allCorpStats = [];
 let selectedCorp = "ALL";
 let statsChartInstance = null;
 
+// 연도별 운영지표 / 사원연명부 모달 상태 (Option 1 연도별 탭 분리)
+let currentStatsYear = "2026";
+let currentRosterModalYear = "2026";
+
 // 주기별 체크리스트 상태
 let currentChecklistCycle = "daily";
 let hideCompletedChecklist = true; // 체크완료 시 숨김 기본 활성화
@@ -144,9 +148,14 @@ function renderKPIs() {
     ? allInspections
     : allInspections.filter(i => i.corp === selectedCorp);
 
+  // 연도별(2026 실시간 vs 2025 결산) 통계 데이터 소스 선택 (케이펙 제외)
+  const yearStatsSource = (window.SAFETY_TIPS_DATA?.corpStatsByYear && window.SAFETY_TIPS_DATA.corpStatsByYear[currentStatsYear])
+    ? window.SAFETY_TIPS_DATA.corpStatsByYear[currentStatsYear].filter(s => s && s.corp_name !== "케이펙")
+    : allCorpStats;
+
   const filteredStats = selectedCorp === "ALL"
-    ? allCorpStats
-    : allCorpStats.filter(s => s.corp_name === selectedCorp);
+    ? yearStatsSource
+    : yearStatsSource.filter(s => s.corp_name === selectedCorp);
 
   const totalWorkers = filteredStats.reduce((sum, s) => sum + (s.worker_count || 0), 0);
 
@@ -291,45 +300,138 @@ function renderHomeUpcomingEvents() {
   lucide.createIcons();
 }
 
-// 2사 법인 카드 렌더링 (케이펙 제외)
+// ==============================================
+// 🏢 주요 법인 운영 지표 연도별 탭 분리 (Option 1)
+// ==============================================
+
+function switchStatsYear(year) {
+  currentStatsYear = year;
+
+  // 1. 버튼 활성화 스타일 업데이트
+  const btn2026 = document.getElementById("btn-stats-year-2026");
+  const btn2025 = document.getElementById("btn-stats-year-2025");
+  if (btn2026 && btn2025) {
+    if (year === '2026') {
+      btn2026.className = "stats-year-btn px-3 py-1.5 rounded-lg bg-sky-600 text-white shadow-xs transition";
+      btn2025.className = "stats-year-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+    } else {
+      btn2025.className = "stats-year-btn px-3 py-1.5 rounded-lg bg-sky-600 text-white shadow-xs transition";
+      btn2026.className = "stats-year-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+    }
+  }
+
+  // 2. 타이틀 및 부제목 업데이트
+  const titleEl = document.getElementById("corp-stats-title");
+  const subEl = document.getElementById("corp-stats-subtitle");
+  if (titleEl) {
+    titleEl.innerHTML = year === '2026'
+      ? `<i data-lucide="building-2" class="w-4 h-4 text-sky-600"></i><span>주요 법인 운영 지표 (2026년 실시간)</span>`
+      : `<i data-lucide="building-2" class="w-4 h-4 text-emerald-600"></i><span>주요 법인 법정 의무이행 실적 (2025년 결산 확정)</span>`;
+  }
+  if (subEl) {
+    subEl.textContent = year === '2026'
+      ? "2026년 10월 최신 사원연명부 기준 인력 및 당해연도 안전보건 이행 진행 현황"
+      : "2025년 12월 결산 사원연명부(보담+백두대간 합산 280명) 기준 법정 의무이행 완료 실적";
+  }
+
+  // 3. KPI 및 법인 카드, 차트 동기화
+  renderKPIs();
+  renderCorpCards();
+  renderChart();
+  lucide.createIcons();
+}
+window.switchStatsYear = switchStatsYear;
+
+// 2사 법인 카드 렌더링 (케이펙 제외, 2026 실시간 vs 2025 법정실적 지원)
 function renderCorpCards() {
   const container = document.getElementById("corp-cards-container");
+  if (!container) return;
+
+  const yearStatsSource = (window.SAFETY_TIPS_DATA?.corpStatsByYear && window.SAFETY_TIPS_DATA.corpStatsByYear[currentStatsYear])
+    ? window.SAFETY_TIPS_DATA.corpStatsByYear[currentStatsYear].filter(s => s && s.corp_name !== "케이펙")
+    : allCorpStats;
+
   const filtered = selectedCorp === "ALL"
-    ? allCorpStats
-    : allCorpStats.filter(s => s.corp_name === selectedCorp);
+    ? yearStatsSource
+    : yearStatsSource.filter(s => s.corp_name === selectedCorp);
 
-  container.innerHTML = filtered.map(stat => `
-    <div class="p-4 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-white hover:border-slate-300 transition space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-sm text-slate-900">${escapeHtml(stat.corp_name)}</h3>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">정상 운영</span>
-      </div>
+  const is2025 = currentStatsYear === '2025';
 
-      <div class="space-y-2 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-slate-500">근로자 수</span>
-          <span class="font-bold text-slate-800">${stat.worker_count}명</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-slate-500">건강검진 수검률</span>
-          <span class="font-bold text-indigo-600">${stat.health_check_rate || 98}%</span>
-        </div>
-        <div>
-          <div class="flex items-center justify-between text-[11px] mb-1">
-            <span class="text-slate-500">위험성평가 이행률</span>
-            <span class="font-bold text-sky-600">${stat.risk_assessment_rate}%</span>
+  container.innerHTML = filtered.map(stat => {
+    const isBodamMerged = is2025 && stat.corp_name.includes("보담");
+    const badgeText = is2025 
+      ? (isBodamMerged ? "2025년 법정완결 (백두대간 합산)" : "2025년 법정완결") 
+      : "2026년 실시간 가동";
+    const badgeClass = is2025
+      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+      : "bg-sky-100 text-sky-800 border-sky-200";
+
+    const workerDetailHtml = isBodamMerged
+      ? `<div class="mt-1.5 text-[11px] text-purple-800 bg-purple-50 p-2.5 rounded-lg border border-purple-200 leading-snug">
+           <div class="flex items-center justify-between">
+             <span class="font-bold text-purple-900">통합 세부 내역:</span>
+             <span class="font-mono font-bold">보담 111명 + 백두대간 169명</span>
+           </div>
+           <div class="text-[10px] text-purple-600 mt-1 flex justify-between">
+             <span>성별: 남 73 / 여 207</span>
+             <span>고용: 정규 178 / 계약 102</span>
+           </div>
+         </div>`
+      : `<div class="text-[11px] text-slate-500 mt-1 flex justify-between bg-white px-2 py-1 rounded border border-slate-100">
+           <span>남 ${stat.gender_male || '-'}명 / 여 ${stat.gender_female || '-'}명</span>
+           <span>정규 ${stat.regular_workers || '-'}명 / 계약 ${stat.contract_workers || '-'}명</span>
+         </div>`;
+
+    return `
+      <div class="p-5 rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs transition space-y-4">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+              <span>${escapeHtml(stat.corp_name)}</span>
+              ${isBodamMerged ? '<span class="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 font-bold rounded">백두대간 합산</span>' : ''}
+            </h3>
+            <span class="text-[11px] text-slate-400 font-medium">${is2025 ? '2025년 12월 결산 실적' : '2026년 실시간 현황'}</span>
           </div>
-          <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-            <div class="bg-sky-500 h-full rounded-full" style="width: ${stat.risk_assessment_rate}%"></div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
+            ${badgeText}
+          </span>
+        </div>
+
+        <div class="space-y-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-600 font-medium">관리 근로자 수 (재적)</span>
+              <span class="font-bold text-slate-900 text-sm font-mono">${stat.worker_count}명</span>
+            </div>
+            ${workerDetailHtml}
+          </div>
+
+          <div class="pt-2 border-t border-slate-200/60">
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-slate-600 font-medium">건강검진 수검률</span>
+              <span class="font-bold text-indigo-700 font-mono">${stat.health_check_rate || 98}%</span>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-tight">${escapeHtml(stat.health_check_status || '')}</p>
+          </div>
+
+          <div class="pt-2 border-t border-slate-200/60">
+            <div class="flex items-center justify-between text-[11px] mb-1">
+              <span class="text-slate-600 font-medium">위험성평가 이행률</span>
+              <span class="font-bold text-sky-700 font-mono">${stat.risk_assessment_rate}%</span>
+            </div>
+            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mb-1">
+              <div class="bg-sky-500 h-full rounded-full transition-all duration-500" style="width: ${stat.risk_assessment_rate}%"></div>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-tight">${escapeHtml(stat.risk_assessment_status || '')}</p>
           </div>
         </div>
-      </div>
 
-      <p class="text-[11px] text-slate-500 bg-white p-2 rounded-lg border border-slate-100 line-clamp-2">
-        ${escapeHtml(stat.status_summary || '정상 가동 중')}
-      </p>
-    </div>
-  `).join("");
+        <p class="text-[11px] text-slate-600 bg-slate-50/70 p-2.5 rounded-lg border border-slate-100 leading-relaxed">
+          ${escapeHtml(stat.status_summary || '정상 운영 중')}
+        </p>
+      </div>
+    `;
+  }).join("");
 }
 
 // 법정 안전검사 설비 현황 테이블
@@ -412,14 +514,18 @@ function closeNoticeModal() {
   document.getElementById("notice-detail-modal").classList.add("hidden");
 }
 
-// Chart.js 통계 차트 (케이펙 제외, 케이프라이드 vs 보담)
+// Chart.js 통계 차트 (케이펙 제외, 2사 중심, 선택 연도 동기화)
 function renderChart() {
   const canvas = document.getElementById("safetyStatsChart");
   if (!canvas) return;
 
-  const labels = allCorpStats.map(s => s.corp_name);
-  const riskRates = allCorpStats.map(s => s.risk_assessment_rate || 0);
-  const healthRates = allCorpStats.map(s => s.health_check_rate || 0);
+  const yearStatsSource = (window.SAFETY_TIPS_DATA?.corpStatsByYear && window.SAFETY_TIPS_DATA.corpStatsByYear[currentStatsYear])
+    ? window.SAFETY_TIPS_DATA.corpStatsByYear[currentStatsYear].filter(s => s && s.corp_name !== "케이펙")
+    : allCorpStats;
+
+  const labels = yearStatsSource.map(s => s.corp_name);
+  const riskRates = yearStatsSource.map(s => s.risk_assessment_rate || 0);
+  const healthRates = yearStatsSource.map(s => s.health_check_rate || 0);
 
   if (statsChartInstance) {
     statsChartInstance.destroy();
@@ -431,13 +537,13 @@ function renderChart() {
       labels: labels,
       datasets: [
         {
-          label: "위험성평가 이행률 (%)",
+          label: `위험성평가 이행률 (%) [${currentStatsYear}년]`,
           data: riskRates,
           backgroundColor: "rgba(2, 132, 199, 0.8)",
           borderRadius: 6
         },
         {
-          label: "건강검진 수검률 (%)",
+          label: `건강검진 수검률 (%) [${currentStatsYear}년]`,
           data: healthRates,
           backgroundColor: "rgba(16, 185, 129, 0.8)",
           borderRadius: 6
@@ -805,49 +911,163 @@ function escapeHtml(str) {
 }
 
 // ==============================================
-// 사원연명부 인력 통계 모달 제어 함수
+// 사원연명부 인력 통계 모달 제어 함수 (2026년 실시간 vs 2025년 결산)
 // ==============================================
 
+function switchRosterModalYear(year) {
+  currentRosterModalYear = year;
+
+  // 버튼 스타일 전환
+  const btn2026 = document.getElementById("btn-roster-modal-2026");
+  const btn2025 = document.getElementById("btn-roster-modal-2025");
+  if (btn2026 && btn2025) {
+    if (year === '2026') {
+      btn2026.className = "px-2.5 py-1 rounded-md bg-indigo-600 text-white shadow-xs transition";
+      btn2025.className = "px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 transition";
+    } else {
+      btn2025.className = "px-2.5 py-1 rounded-md bg-indigo-600 text-white shadow-xs transition";
+      btn2026.className = "px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 transition";
+    }
+  }
+
+  renderRosterModalContent(year);
+}
+window.switchRosterModalYear = switchRosterModalYear;
+
+function renderRosterModalContent(year) {
+  const container = document.getElementById("roster-modal-body");
+  if (!container) return;
+
+  const rosterByYear = window.SAFETY_TIPS_DATA?.rosterStats?.byYear;
+  if (!rosterByYear || !rosterByYear[year]) {
+    container.innerHTML = `<div class="p-8 text-center text-slate-400">사원연명부 통계 데이터를 불러올 수 없습니다.</div>`;
+    return;
+  }
+
+  const data = rosterByYear[year];
+  const is2025 = year === '2025';
+
+  container.innerHTML = `
+    <!-- 상단 종합 요약 배너 -->
+    <div class="p-4 rounded-xl ${is2025 ? 'bg-gradient-to-r from-emerald-500/10 via-purple-500/10 to-indigo-500/10 border border-emerald-200' : 'bg-gradient-to-r from-indigo-500/10 via-sky-500/10 to-purple-500/10 border border-indigo-200'}">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${is2025 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
+            ${is2025 ? '2025년 결산 확정 집계' : '2026년 10월 최신본 실시간'}
+          </span>
+          <h4 class="font-bold text-sm text-slate-900 mt-1">2사 관리 총원: <span class="text-indigo-700 font-mono text-base font-extrabold">${data.totalWorkers}명</span></h4>
+          <p class="text-[11px] text-slate-600 mt-0.5">
+            ${is2025 ? '케이프라이드(324명) + 보담·백두대간 합산(280명)' : '케이프라이드(225명) + 보담(99명)'}
+          </p>
+        </div>
+        <div class="text-[10px] text-slate-500 sm:text-right">
+          <div>데이터 기준: <span class="font-mono font-semibold">${data.baseDate}</span></div>
+          <div class="text-slate-400 mt-0.5">※ (주)케이펙(${year === '2026' ? '28' : '34'}명)은 내부 집계 반영 및 UI 비노출 유지</div>
+        </div>
+      </div>
+      ${is2025 ? `
+        <div class="mt-3 p-2.5 bg-white/90 rounded-lg border border-purple-200 text-[11px] text-purple-950 flex items-start gap-2 shadow-2xs">
+          <i data-lucide="info" class="w-4 h-4 text-purple-600 shrink-0 mt-0.5"></i>
+          <div>
+            <strong class="text-purple-900 font-bold">2025년 보담 집계 안내:</strong> 당시 법인 통합 운영 내역을 반영하여 <strong>(주)보담(111명)</strong>과 <strong>백두대간(169명)</strong>을 합산한 <strong>총 280명</strong>으로 확정 집계되었습니다.
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <!-- 2사 법인별 세부 통계 그리드 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 케이프라이드 카드 -->
+      <div class="p-4 bg-slate-50/70 rounded-xl border border-slate-200 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h5 class="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="building" class="w-4 h-4 text-sky-600"></i>
+              ${escapeHtml(data.kpride.corpName)}
+            </h5>
+            <span class="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">${data.kpride.total}명</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[11px] mb-3 bg-white p-2.5 rounded-lg border border-slate-200/60">
+            <div>
+              <span class="text-slate-400">성별:</span>
+              <span class="font-semibold text-slate-700">남 ${data.kpride.gender.male} / 여 ${data.kpride.gender.female}</span>
+            </div>
+            <div>
+              <span class="text-slate-400">고용형태:</span>
+              <span class="font-semibold text-slate-700">정규 ${data.kpride.employment.regular} / 계약 ${data.kpride.employment.contract}</span>
+            </div>
+          </div>
+
+          <h6 class="font-bold text-[11px] text-slate-700 mb-2">부서/공정별 인원 및 위험도</h6>
+          <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+            ${data.kpride.departments.map(d => `
+              <div class="p-1.5 bg-white rounded border border-slate-100 flex items-center justify-between text-[11px]">
+                <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono font-bold text-sky-700">${d.count}명</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+
+      <!-- 보담 카드 -->
+      <div class="p-4 bg-slate-50/70 rounded-xl border border-slate-200 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h5 class="font-bold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="building" class="w-4 h-4 text-purple-600"></i>
+              ${escapeHtml(data.bodam.corpName)}
+            </h5>
+            <span class="font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">${data.bodam.total}명</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[11px] mb-3 bg-white p-2.5 rounded-lg border border-slate-200/60">
+            <div>
+              <span class="text-slate-400">성별:</span>
+              <span class="font-semibold text-slate-700">남 ${data.bodam.gender.male} / 여 ${data.bodam.gender.female}</span>
+            </div>
+            <div>
+              <span class="text-slate-400">고용형태:</span>
+              <span class="font-semibold text-slate-700">정규 ${data.bodam.employment.regular} / 계약 ${data.bodam.employment.contract}</span>
+            </div>
+          </div>
+
+          <h6 class="font-bold text-[11px] text-slate-700 mb-2">부서/공정별 인원 및 위험도</h6>
+          <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+            ${data.bodam.departments.map(d => `
+              <div class="p-1.5 bg-white rounded border border-slate-100 flex items-center justify-between text-[11px]">
+                <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono font-bold text-purple-700">${d.count}명</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  lucide.createIcons();
+}
+
 function openRosterModal() {
-  const kprideContainer = document.getElementById("roster-kpride-list");
-  const bodamContainer = document.getElementById("roster-bodam-list");
-  if (!window.SAFETY_TIPS_DATA?.rosterStats) return;
-
-  const stats = window.SAFETY_TIPS_DATA.rosterStats;
-
-  // 1. 케이프라이드 부서별 렌더링
-  if (kprideContainer) {
-    kprideContainer.innerHTML = stats.kpride.departments.map(d => `
-      <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
-        <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
-        <div class="flex items-center gap-2">
-          <span class="font-bold text-sky-700 font-mono">${d.count}명</span>
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  // 2. 보담 부서별 렌더링
-  if (bodamContainer) {
-    bodamContainer.innerHTML = stats.bodam.departments.map(d => `
-      <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
-        <span class="font-medium text-slate-800">${escapeHtml(d.dept)}</span>
-        <div class="flex items-center gap-2">
-          <span class="font-bold text-purple-700 font-mono">${d.count}명</span>
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${escapeHtml(d.riskLevel)}</span>
-        </div>
-      </div>
-    `).join("");
-  }
-
+  currentRosterModalYear = currentStatsYear;
+  switchRosterModalYear(currentRosterModalYear);
   document.getElementById("roster-modal").classList.remove("hidden");
   lucide.createIcons();
 }
+window.openRosterModal = openRosterModal;
 
 function closeRosterModal() {
   document.getElementById("roster-modal").classList.add("hidden");
 }
+window.closeRosterModal = closeRosterModal;
 
 // ==============================================
 // 🛡️ ISO 45001 전용 체크리스트 제어 함수

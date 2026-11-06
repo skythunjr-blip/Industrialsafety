@@ -341,43 +341,195 @@ const PERIODIC_CHECKLISTS = {
 window.SAFETY_TIPS_DATA.periodicChecklists = PERIODIC_CHECKLISTS;
 
 // ==============================================
-// 5. 최신 사원연명부 기반 안전보건 인력 현황 (개인정보 비식별 통계)
+// 5. 최신 사원연명부 및 법정 의무이행 실적 (2026년 실시간 vs 2025년 결산)
 // ==============================================
+const CORP_STATS_BY_YEAR = {
+  '2026': [
+    {
+      corp_name: "케이프라이드",
+      year: "2026",
+      worker_count: 225,
+      gender_male: 78,
+      gender_female: 147,
+      regular_workers: 133,
+      contract_workers: 91,
+      risk_assessment_rate: 94,
+      risk_assessment_status: "편철 준비 중 (11.20 마감)",
+      health_check_rate: 98,
+      health_check_status: "가을 출장검진 완료 / 2차 정밀검진 추적 관리 중",
+      status_summary: "2026년 10월 최신 사원연명부 기준: 225명 (정규직 133 / 계약직 91)"
+    },
+    {
+      corp_name: "보담",
+      year: "2026",
+      worker_count: 99,
+      gender_male: 34,
+      gender_female: 65,
+      regular_workers: 62,
+      contract_workers: 37,
+      risk_assessment_rate: 91,
+      risk_assessment_status: "정기 이행 중 (도급 합동점검 완비)",
+      health_check_rate: 100,
+      health_check_status: "가을 출장검진 완료 / 11월 수검 독려 진행 중",
+      status_summary: "2026년 10월 최신 사원연명부 기준: 99명 (정규직 62 / 계약직 37)"
+    },
+    {
+      corp_name: "케이펙",
+      year: "2026",
+      worker_count: 28,
+      gender_male: 15,
+      gender_female: 13,
+      regular_workers: 18,
+      contract_workers: 10,
+      risk_assessment_rate: 88,
+      risk_assessment_status: "2026년 자체 관리",
+      health_check_rate: 96,
+      health_check_status: "2026년 수검 진행 중",
+      status_summary: "2026년 최신 사원연명부 기준: 28명 (남 15 / 여 13)"
+    }
+  ],
+  '2025': [
+    {
+      corp_name: "케이프라이드",
+      year: "2025",
+      worker_count: 324,
+      gender_male: 113,
+      gender_female: 211,
+      regular_workers: 212,
+      contract_workers: 112,
+      risk_assessment_rate: 94,
+      risk_assessment_status: "2025년 정기 위험성평가표 및 감소대책 완료 (확정)",
+      health_check_rate: 98,
+      health_check_status: "2025년 일반·특수건강진단 사후관리소견서 완비 (확정)",
+      status_summary: "2025년 결산 사원연명부 기준: 324명 (정규직 212 / 계약직 112)"
+    },
+    {
+      corp_name: "보담",
+      year: "2025",
+      worker_count: 280,
+      bodam_own: 111,
+      baekdu_merge: 169,
+      gender_male: 73,
+      gender_female: 207,
+      regular_workers: 178,
+      contract_workers: 102,
+      risk_assessment_rate: 91,
+      risk_assessment_status: "2025년 정기 위험성평가 개선대책 완결 (확정)",
+      health_check_rate: 100,
+      health_check_status: "2025년 일반·특수건강진단 전원 수검 완료 (확정)",
+      status_summary: "2025년 결산 기준: 280명 [보담 111명 + 백두대간 169명 통합 집계]"
+    },
+    {
+      corp_name: "케이펙",
+      year: "2025",
+      worker_count: 34,
+      gender_male: 21,
+      gender_female: 13,
+      regular_workers: 22,
+      contract_workers: 12,
+      risk_assessment_rate: 88,
+      risk_assessment_status: "2025년 완결",
+      health_check_rate: 96,
+      health_check_status: "2025년 완결",
+      status_summary: "2025년 결산 사원연명부 기준: 34명 (남 21 / 여 13)"
+    }
+  ]
+};
+
 const ROSTER_STATS = {
-  baseDate: "2026-10 최신본",
-  totalWorkers: 324,
-  kpride: {
-    corpName: "(주)케이프라이드",
-    total: 225,
-    gender: { male: 102, female: 123 },
-    employment: { regular: 133, contract: 91, other: 1 },
-    departments: [
-      { dept: "M본부 (영업/매장/유통)", count: 104, riskLevel: "보통" },
-      { dept: "가공생산과 (제조)", count: 27, riskLevel: "주의 (소음/회전체)" },
-      { dept: "식육생산과 (제조)", count: 26, riskLevel: "주의 (육절/골절기)" },
-      { dept: "SCM팀 (물류/상하차)", count: 25, riskLevel: "주의 (지게차/중량물)" },
-      { dept: "경영자원본부 (인적자원/안전)", count: 22, riskLevel: "일반" },
-      { dept: "가열생산과 (제조)", count: 10, riskLevel: "주의 (고열/화상)" },
-      { dept: "자금회계팀", count: 5, riskLevel: "일반" },
-      { dept: "품질관리팀 (실험/검사)", count: 4, riskLevel: "보통 (화학/검사)" },
-      { dept: "상품생산과", count: 1, riskLevel: "보통" },
-      { dept: "대표이사(CEO)", count: 1, riskLevel: "총괄" }
-    ]
-  },
-  bodam: {
-    corpName: "(주)보담",
-    total: 99,
-    gender: { male: 34, female: 65 },
-    departments: [
-      { dept: "생산부 (신선생산/가공)", count: 58, riskLevel: "주의 (기계설비)" },
-      { dept: "식육사업본부", count: 18, riskLevel: "주의 (식육가공)" },
-      { dept: "SCM/물류팀", count: 12, riskLevel: "주의 (지게차 운행)" },
-      { dept: "관리/회계/계열화", count: 10, riskLevel: "일반" },
-      { dept: "대표이사(CEO)", count: 1, riskLevel: "총괄" }
-    ]
+  byYear: {
+    '2026': {
+      baseDate: "2026-10 최신본",
+      totalWorkers: 324,
+      kpride: {
+        corpName: "(주)케이프라이드",
+        total: 225,
+        gender: { male: 78, female: 147 },
+        employment: { regular: 133, contract: 91, other: 1 },
+        departments: [
+          { dept: "M본부 (영업/매장/유통)", count: 104, riskLevel: "보통" },
+          { dept: "가공생산과 (제조)", count: 27, riskLevel: "주의 (소음/회전체)" },
+          { dept: "식육생산과 (제조)", count: 26, riskLevel: "주의 (육절/골절기)" },
+          { dept: "SCM팀 (물류/상하차)", count: 25, riskLevel: "주의 (지게차/중량물)" },
+          { dept: "경영자원본부 (인적자원/안전)", count: 22, riskLevel: "일반" },
+          { dept: "가열생산과 (제조)", count: 10, riskLevel: "주의 (고열/화상)" },
+          { dept: "자금회계팀", count: 5, riskLevel: "일반" },
+          { dept: "품질관리팀 (실험/검사)", count: 4, riskLevel: "보통 (화학/검사)" },
+          { dept: "상품생산과", count: 1, riskLevel: "보통" },
+          { dept: "대표이사(CEO)", count: 1, riskLevel: "총괄" }
+        ]
+      },
+      bodam: {
+        corpName: "(주)보담",
+        total: 99,
+        gender: { male: 34, female: 65 },
+        employment: { regular: 62, contract: 37 },
+        departments: [
+          { dept: "생산부 (신선생산/가공)", count: 58, riskLevel: "주의 (기계설비)" },
+          { dept: "식육사업본부", count: 18, riskLevel: "주의 (식육가공)" },
+          { dept: "SCM/물류팀", count: 12, riskLevel: "주의 (지게차 운행)" },
+          { dept: "관리/회계/계열화", count: 10, riskLevel: "일반" },
+          { dept: "대표이사(CEO)", count: 1, riskLevel: "총괄" }
+        ]
+      },
+      kpec: {
+        corpName: "(주)케이펙",
+        total: 28,
+        gender: { male: 15, female: 13 },
+        employment: { regular: 18, contract: 10 }
+      }
+    },
+    '2025': {
+      baseDate: "2025-12 결산본",
+      totalWorkers: 604,
+      kpride: {
+        corpName: "(주)케이프라이드",
+        total: 324,
+        gender: { male: 113, female: 211 },
+        employment: { regular: 212, contract: 112 },
+        departments: [
+          { dept: "M본부 (영업/매장/유통)", count: 146, riskLevel: "보통" },
+          { dept: "가공생산부 (제조)", count: 44, riskLevel: "주의 (소음/회전체)" },
+          { dept: "식육사업본부 (제조)", count: 40, riskLevel: "주의 (육절/골절기)" },
+          { dept: "신선생산팀", count: 28, riskLevel: "주의" },
+          { dept: "경영자원본부 (인적자원/안전)", count: 23, riskLevel: "일반" },
+          { dept: "SCM팀 (물류/상하차)", count: 23, riskLevel: "주의 (지게차)" },
+          { dept: "상품팀", count: 7, riskLevel: "보통" },
+          { dept: "품질관리팀", count: 5, riskLevel: "보통" },
+          { dept: "자금회계담당", count: 4, riskLevel: "일반" },
+          { dept: "CEO/임원", count: 4, riskLevel: "총괄" }
+        ]
+      },
+      bodam: {
+        corpName: "(주)보담 (백두대간 합산)",
+        total: 280,
+        gender: { male: 73, female: 207 },
+        employment: { regular: 178, contract: 102 },
+        mergeDetail: "보담(111명) + 백두대간(169명) 통합",
+        departments: [
+          { dept: "백두대간 식육가공/생산 (합산)", count: 169, riskLevel: "주의 (식육/가공)" },
+          { dept: "보담 본사 생산부 (가공제조)", count: 68, riskLevel: "주의 (기계설비)" },
+          { dept: "보담 식육사업본부", count: 22, riskLevel: "주의" },
+          { dept: "보담 관리/물류/영업", count: 21, riskLevel: "일반/주의" }
+        ]
+      },
+      kpec: {
+        corpName: "(주)케이펙",
+        total: 34,
+        gender: { male: 21, female: 13 },
+        employment: { regular: 22, contract: 12 }
+      }
+    }
   }
 };
 
+// 레거시 호환
+ROSTER_STATS.baseDate = ROSTER_STATS.byYear['2026'].baseDate;
+ROSTER_STATS.totalWorkers = ROSTER_STATS.byYear['2026'].totalWorkers;
+ROSTER_STATS.kpride = ROSTER_STATS.byYear['2026'].kpride;
+ROSTER_STATS.bodam = ROSTER_STATS.byYear['2026'].bodam;
+
+window.SAFETY_TIPS_DATA.corpStatsByYear = CORP_STATS_BY_YEAR;
 window.SAFETY_TIPS_DATA.rosterStats = ROSTER_STATS;
 
 // ==============================================

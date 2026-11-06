@@ -300,12 +300,29 @@
             </div>
           </section>
 
-          <!-- 2사 사업장 안전보건 현황 카드 (케이프라이드 & 보담) -->
+          <!-- 2사 사업장 안전보건 현황 카드 (케이프라이드 & 보담 - 연도별 탭 분리: Option 1) -->
           <section class="space-y-3">
-            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="building-2" class="w-5 h-5 text-sky-600"></i>
-              <span>사업장별 안전보건 운영 지표 (횡성 본사)</span>
-            </h2>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="building-2" class="w-5 h-5 text-sky-600"></i>
+                  <span id="corp-stats-title">2026년 실시간 사업장 운영 현황 (횡성 본사)</span>
+                </h2>
+                <p id="corp-stats-subtitle" class="text-xs text-slate-500 mt-0.5">최신 사원연명부 기준 인력 및 당해연도 안전보건 이행 진행 현황</p>
+              </div>
+
+              <!-- 연도별 탭 분리 토글 버튼 (Option 1) -->
+              <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold shrink-0">
+                <button onclick="switchStatsYear('2026')" id="btn-stats-year-2026" class="stats-year-btn px-3 py-1.5 rounded-lg bg-sky-600 text-white shadow-xs transition">
+                  2026년 실시간 현황
+                </button>
+                <button onclick="switchStatsYear('2025')" id="btn-stats-year-2025" class="stats-year-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+                  2025년 법정 실적 (확정)
+                </button>
+              </div>
+            </div>
+
+            <!-- 동적 연도별 카드 렌더링 -->
             <div id="corp-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- JS 동적 렌더링 -->
             </div>
@@ -660,33 +677,23 @@
             <i data-lucide="users" class="w-4 h-4"></i>
           </div>
           <div>
-            <h3 class="font-bold text-base text-slate-900">2026년 최신 사원 인력 현황 (개인정보 비식별화)</h3>
-            <p class="text-xs text-slate-500">프로젝트 폴더 내 최신 사원연명부 원본(Numbers) 데이터 파싱 집계</p>
+            <h3 id="roster-modal-title" class="font-bold text-base text-slate-900">사원 인력 현황 (개인정보 비식별 통계)</h3>
+            <p id="roster-modal-desc" class="text-xs text-slate-500">프로젝트 폴더 내 사원연명부 원본(Numbers) 데이터 파싱 집계</p>
           </div>
         </div>
-        <button onclick="closeRosterModal()" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- 모달 내부 연도 토글 -->
+          <div class="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 text-xs font-bold">
+            <button onclick="switchRosterModalYear('2026')" id="btn-roster-modal-2026" class="px-2.5 py-1 rounded-md bg-indigo-600 text-white shadow-xs transition">2026년</button>
+            <button onclick="switchRosterModalYear('2025')" id="btn-roster-modal-2025" class="px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 transition">2025년</button>
+          </div>
+          <button onclick="closeRosterModal()" class="text-slate-400 hover:text-slate-600 p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
       </div>
       <div class="p-6 overflow-y-auto space-y-5 text-xs" id="roster-modal-body">
-        <div class="grid grid-cols-3 gap-3 text-center">
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span class="text-slate-500 text-[11px]">통합 총원</span>
-            <div class="text-lg font-bold text-slate-900 mt-0.5">324명</div>
-          </div>
-          <div class="p-3 bg-sky-50 rounded-xl border border-sky-200 text-sky-900">
-            <span class="text-sky-600 text-[11px]">(주)케이프라이드</span>
-            <div class="text-lg font-bold mt-0.5">225명</div>
-          </div>
-          <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-indigo-900">
-            <span class="text-indigo-600 text-[11px]">(주)보담</span>
-            <div class="text-lg font-bold mt-0.5">99명</div>
-          </div>
-        </div>
-        <div class="border border-slate-200 rounded-xl overflow-hidden">
-          <div class="bg-slate-50 px-4 py-2 font-bold text-slate-700 border-b border-slate-200 text-xs">부서별 인원 분포표</div>
-          <div class="divide-y divide-slate-100 max-h-60 overflow-y-auto" id="roster-dept-list"></div>
-        </div>
+        <!-- JS 동적 렌더링 -->
       </div>
       <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
         <button onclick="closeRosterModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
