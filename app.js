@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadRecentFiles();
   renderPeriodicChecklist();
   renderIsoChecklist();
+  renderCalendar();
+  renderFormsHub();
 
   // 30초마다 자동 새로고침
   setInterval(async () => {
@@ -89,12 +91,29 @@ function updateHeaderAndBanner() {
   }
 }
 
-// 법인 필터 전환
-function filterCorp(corpName) {
-  selectedCorp = corpName;
-  const buttons = document.querySelectorAll(".corp-tab");
-  buttons.forEach(btn => {
-    if (btn.id === `filter-btn-${corpName}`) {
+// 법인 필터 전환 (전체, 케이프라이드, 보담)
+function setCompanyFilter(corp) {
+  if (!corp || corp.toLowerCase() === 'all') {
+    selectedCorp = 'ALL';
+  } else {
+    selectedCorp = corp;
+  }
+
+  const btnAll = document.getElementById("btn-corp-all");
+  const btnKpride = document.getElementById("btn-corp-kpride");
+  const btnBodam = document.getElementById("btn-corp-bodam");
+
+  const activeClass = "corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-white bg-slate-900 shadow-2xs transition font-bold";
+  const inactiveClass = "corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-slate-600 hover:text-slate-900 transition";
+
+  if (btnAll) btnAll.className = (selectedCorp === 'ALL') ? activeClass : inactiveClass;
+  if (btnKpride) btnKpride.className = (selectedCorp === '케이프라이드') ? activeClass : inactiveClass;
+  if (btnBodam) btnBodam.className = (selectedCorp === '보담') ? activeClass : inactiveClass;
+
+  // 레거시 필터 버튼 호환
+  const legacyButtons = document.querySelectorAll(".corp-tab");
+  legacyButtons.forEach(btn => {
+    if (btn.id === `filter-btn-${selectedCorp}`) {
       btn.className = "corp-tab px-3 py-1.5 rounded-lg text-sky-700 bg-sky-50 font-bold transition";
     } else {
       btn.className = "corp-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
@@ -105,7 +124,9 @@ function filterCorp(corpName) {
   renderAlerts();
   renderInspectionsTable();
   renderCorpCards();
+  renderCalendar();
 }
+window.filterCorp = setCompanyFilter;
 
 // KPI 요약 카드 계산 및 렌더링
 function renderKPIs() {
@@ -983,4 +1004,412 @@ function handleModalIsoCheck(id) {
 
 function closeIsoModal() {
   document.getElementById("iso-detail-modal").classList.add("hidden");
+}
+
+// ==========================================
+// 8. 포털 탭 전환 및 사이드바 내비게이션 (Portal Navigation)
+// ==========================================
+let currentPortalTab = 'dashboard';
+
+const PORTAL_TAB_TITLES = {
+  dashboard: '종합 관제 대시보드',
+  calendar: '월간 법정 안전 캘린더',
+  checklist: '주기별 점검 & TBM 체크리스트',
+  iso45001: 'ISO 45001 경영센터',
+  forms: '법정 서식 & 일지 다운로드 허브'
+};
+
+function switchPortalTab(tabId) {
+  currentPortalTab = tabId;
+
+  // 1. 브레드크럼 타이틀 갱신
+  const titleEl = document.getElementById("current-tab-title");
+  if (titleEl && PORTAL_TAB_TITLES[tabId]) {
+    titleEl.textContent = PORTAL_TAB_TITLES[tabId];
+  }
+
+  // 2. 뷰 컨테이너 토글
+  const views = ["dashboard", "calendar", "checklist", "iso45001", "forms"];
+  views.forEach(v => {
+    const el = document.getElementById(`portal-view-${v}`);
+    if (el) {
+      if (v === tabId) {
+        el.classList.remove("hidden");
+      } else {
+        el.classList.add("hidden");
+      }
+    }
+  });
+
+  // 3. 사이드바 버튼 활성화 스타일
+  const navBtns = document.querySelectorAll(".portal-nav-btn");
+  navBtns.forEach(btn => {
+    if (btn.id === `nav-btn-${tabId}`) {
+      btn.className = "portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white bg-sky-600 font-bold shadow-xs transition";
+    } else {
+      btn.className = "portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition";
+    }
+  });
+
+  // 4. 모듈별 동적 렌더러 호출
+  if (tabId === "calendar") {
+    renderCalendar();
+  } else if (tabId === "forms") {
+    renderFormsHub();
+  } else if (tabId === "checklist") {
+    renderPeriodicChecklist();
+  } else if (tabId === "iso45001") {
+    renderIsoChecklist();
+  }
+
+  // 5. 모바일 사이드바가 열려있다면 닫기
+  const sidebar = document.getElementById("portal-sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (sidebar && !sidebar.classList.contains("-translate-x-full") && window.innerWidth < 768) {
+    sidebar.classList.add("-translate-x-full");
+    backdrop?.classList.add("hidden");
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  lucide.createIcons();
+}
+
+// 모바일 드로어 사이드바 토글
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById("portal-sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (!sidebar) return;
+  const isClosed = sidebar.classList.contains("-translate-x-full");
+  if (isClosed) {
+    sidebar.classList.remove("-translate-x-full");
+    backdrop?.classList.remove("hidden");
+  } else {
+    sidebar.classList.add("-translate-x-full");
+    backdrop?.classList.add("hidden");
+  }
+}
+
+// ==========================================
+// 9. 월간 법정 안전 캘린더 렌더링 (Option 3)
+// ==========================================
+let currentCalMonth = '2026-11';
+let selectedCalDate = '2026-11-06';
+
+function switchCalendarMonth(monthStr) {
+  currentCalMonth = monthStr;
+  const btn11 = document.getElementById("btn-cal-2026-11");
+  const btn12 = document.getElementById("btn-cal-2026-12");
+
+  if (monthStr === "2026-11") {
+    if (btn11) btn11.className = "cal-month-btn px-4 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs transition font-bold";
+    if (btn12) btn12.className = "cal-month-btn px-4 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition font-bold";
+    selectedCalDate = "2026-11-06";
+  } else {
+    if (btn11) btn11.className = "cal-month-btn px-4 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition font-bold";
+    if (btn12) btn12.className = "cal-month-btn px-4 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs transition font-bold";
+    selectedCalDate = "2026-12-18";
+  }
+
+  renderCalendar();
+}
+
+function selectCalendarDate(dateStr) {
+  selectedCalDate = dateStr;
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const container = document.getElementById("calendar-grid-cells");
+  const detailPanel = document.getElementById("calendar-detail-panel");
+  if (!container || !detailPanel) return;
+
+  const [yearStr, monthStr] = currentCalMonth.split("-");
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10);
+
+  // 1일 요일 (0: 일, 6: 토) 및 총 일수
+  const firstDayOfWeek = new Date(year, month - 1, 1).getDay();
+  const totalDays = new Date(year, month, 0).getDate();
+
+  // 법정 캘린더 이벤트 데이터
+  const allEvents = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.calendarEvents) || [];
+  const corpEvents = selectedCorp === "ALL"
+    ? allEvents
+    : allEvents.filter(e => e.corp.includes(selectedCorp) || e.corp.includes("전 법인") || e.corp.includes("공통"));
+
+  let cellsHtml = "";
+
+  // 이전 달 빈 칸 채우기
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    cellsHtml += `<div class="min-h-[72px] sm:min-h-[82px] p-1.5 bg-slate-50/50 rounded-xl border border-slate-100 opacity-40"></div>`;
+  }
+
+  // 당월 날짜 칸 생성
+  for (let d = 1; d <= totalDays; d++) {
+    const dStr = String(d).padStart(2, "0");
+    const fullDateStr = `${yearStr}-${monthStr}-${dStr}`;
+    const isToday = (fullDateStr === "2026-11-06");
+    const isSelected = (fullDateStr === selectedCalDate);
+
+    const dayOfWeek = new Date(year, month - 1, d).getDay();
+    const isSunday = (dayOfWeek === 0);
+    const isSaturday = (dayOfWeek === 6);
+
+    const dayEvents = corpEvents.filter(e => e.date === fullDateStr);
+
+    let cellBorder = "border-slate-200 hover:border-emerald-300";
+    let cellBg = "bg-white hover:bg-slate-50/80";
+    if (isSelected) {
+      cellBorder = "border-emerald-500 ring-2 ring-emerald-500/40";
+      cellBg = "bg-emerald-50/40";
+    }
+
+    cellsHtml += `
+      <div onclick="selectCalendarDate('${fullDateStr}')" 
+        class="min-h-[72px] sm:min-h-[82px] p-2 rounded-xl border ${cellBorder} ${cellBg} flex flex-col justify-between cursor-pointer transition shadow-2xs">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold ${isSunday ? 'text-red-500' : (isSaturday ? 'text-blue-500' : 'text-slate-800')}">
+            ${d}
+          </span>
+          ${isToday ? `<span class="text-[9px] bg-rose-600 text-white font-extrabold px-1.5 py-0.2 rounded-full tracking-tighter shadow-2xs">오늘</span>` : ''}
+        </div>
+        <div class="space-y-1 mt-1">
+          ${dayEvents.slice(0, 2).map(ev => {
+            const pillColor = ev.type === 'critical' 
+              ? 'bg-rose-100 text-rose-800 border-rose-200' 
+              : (ev.type === 'warning' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-sky-100 text-sky-800 border-sky-200');
+            return `
+              <div class="text-[10px] truncate px-1.5 py-0.5 rounded border ${pillColor} font-semibold" title="${escapeHtml(ev.title)}">
+                ${escapeHtml(ev.title)}
+              </div>
+            `;
+          }).join("")}
+          ${dayEvents.length > 2 ? `<div class="text-[9px] text-slate-500 font-bold pl-0.5">+${dayEvents.length - 2}건</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = cellsHtml;
+  renderCalendarDetail(selectedCalDate, corpEvents);
+}
+
+function renderCalendarDetail(dateStr, corpEvents) {
+  const detailPanel = document.getElementById("calendar-detail-panel");
+  if (!detailPanel) return;
+
+  const [y, m, d] = dateStr.split("-");
+  const dateObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+  const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
+  const dayName = weekDays[dateObj.getDay()];
+  const formattedTitle = `${y}년 ${parseInt(m)}월 ${parseInt(d)}일 (${dayName})`;
+
+  const eventsOnDate = corpEvents.filter(e => e.date === dateStr);
+  const badgeMap = {
+    critical: { text: "긴급 마감", class: "bg-red-100 text-red-700 border-red-200" },
+    warning: { text: "법정 관리", class: "bg-amber-100 text-amber-800 border-amber-200" },
+    info: { text: "예정 안내", class: "bg-sky-100 text-sky-700 border-sky-200" }
+  };
+
+  if (eventsOnDate.length > 0) {
+    detailPanel.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div>
+            <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">선택 일자 일정 상세</div>
+            <h3 class="font-extrabold text-sm text-slate-900">${formattedTitle}</h3>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
+            총 ${eventsOnDate.length}건
+          </span>
+        </div>
+
+        <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+          ${eventsOnDate.map(ev => `
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeMap[ev.type]?.class || badgeMap.info.class}">
+                  ${badgeMap[ev.type]?.text || "법정"}
+                </span>
+                <span class="text-[11px] font-bold text-rose-600 font-mono">${escapeHtml(ev.ddayText || '')}</span>
+              </div>
+              <div class="text-[10px] font-semibold text-slate-500">${escapeHtml(ev.corp)} &bull; ${escapeHtml(ev.category)}</div>
+              <h4 class="font-bold text-xs text-slate-900 leading-snug">${escapeHtml(ev.title)}</h4>
+              <p class="text-[11px] text-slate-600 leading-relaxed">${escapeHtml(ev.desc)}</p>
+              ${ev.tip ? `
+                <div class="p-2.5 rounded-lg bg-amber-50/90 border border-amber-200 text-[10px] text-amber-950 leading-relaxed">
+                  ${escapeHtml(ev.tip)}
+                </div>
+              ` : ''}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 text-center">
+        <p class="text-[10px] text-slate-500">※ 노동부 점검 시 일정 기한 내 미이행 문서는 과태료 대상이 됩니다.</p>
+      </div>
+    `;
+  } else {
+    const upcoming = corpEvents
+      .filter(e => e.date >= dateStr && e.date.startsWith(currentCalMonth))
+      .slice(0, 2);
+
+    detailPanel.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div>
+            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">선택 일자 일정 상세</div>
+            <h3 class="font-extrabold text-sm text-slate-900">${formattedTitle}</h3>
+          </div>
+          <span class="text-xs font-semibold text-slate-400">일정 없음</span>
+        </div>
+
+        <div class="py-8 text-center text-xs text-slate-500 space-y-2 bg-white rounded-xl border border-dashed border-slate-200 p-4">
+          <i data-lucide="calendar-check" class="w-8 h-8 text-slate-300 mx-auto"></i>
+          <p class="font-medium text-slate-600">선택한 일자에 예정된 법정 안전보건 일정이 없습니다.</p>
+          <p class="text-[11px] text-slate-400">달력에서 표시된 날짜를 클릭하여 상세 조치 지침을 확인하세요.</p>
+        </div>
+
+        ${upcoming.length > 0 ? `
+          <div class="space-y-2">
+            <div class="text-[11px] font-bold text-slate-700">이후 다가오는 주요 법정 일정:</div>
+            ${upcoming.map(u => `
+              <div onclick="selectCalendarDate('${u.date}')" class="p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer flex items-center justify-between text-xs transition">
+                <div class="truncate pr-2">
+                  <span class="font-mono text-emerald-700 font-bold text-[11px]">${u.date}</span>
+                  <div class="font-bold text-slate-800 text-[11px] truncate">${escapeHtml(u.title)}</div>
+                </div>
+                <span class="text-[10px] font-mono text-rose-600 shrink-0 font-bold">${escapeHtml(u.ddayText || '')}</span>
+              </div>
+            `).join("")}
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 text-center">
+        <p class="text-[10px] text-slate-500">정기 점검 문의: 산업안전 총괄 관리자</p>
+      </div>
+    `;
+  }
+
+  lucide.createIcons();
+}
+
+// ==========================================
+// 10. 법정 서식 다운로드 및 A4 인쇄 센터 (Option 1)
+// ==========================================
+let currentPreviewForm = null;
+
+function renderFormsHub() {
+  const container = document.getElementById("forms-grid-container");
+  if (!container) return;
+
+  const forms = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.safetyForms) || [];
+  if (!forms.length) {
+    container.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400">등록된 서식 데이터가 없습니다.</div>`;
+    return;
+  }
+
+  container.innerHTML = forms.map(f => `
+    <div class="p-5 rounded-2xl border border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md transition flex flex-col justify-between space-y-4">
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+            ${escapeHtml(f.category)}
+          </span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            ${escapeHtml(f.cycle)}
+          </span>
+        </div>
+
+        <h3 class="font-extrabold text-sm text-slate-900 leading-snug">${escapeHtml(f.title)}</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">${escapeHtml(f.desc)}</p>
+
+        <div class="flex items-center gap-2 text-[10px] text-slate-500 flex-wrap">
+          <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200 font-medium">⚖️ ${escapeHtml(f.lawRef)}</span>
+          <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200 font-medium">📁 ${escapeHtml(f.retention)}</span>
+        </div>
+
+        <div class="pt-2">
+          <div class="text-[11px] font-bold text-slate-700 mb-1.5">주요 기재 항목:</div>
+          <ul class="text-[11px] text-slate-600 space-y-1 pl-1">
+            ${f.items.map(it => `
+              <li class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></span>
+                <span class="truncate">${escapeHtml(it)}</span>
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
+        <button onclick="openFormPreview('${f.id}')" 
+          class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>서식 열기 및 인쇄</span>
+        </button>
+        <button onclick="copyCurrentForm('${f.id}')" 
+          class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition" title="텍스트 서식 복사">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  `).join("");
+
+  lucide.createIcons();
+}
+
+function openFormPreview(formId) {
+  const forms = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.safetyForms) || [];
+  const form = forms.find(f => f.id === formId);
+  if (!form) return;
+
+  currentPreviewForm = form;
+  const titleEl = document.getElementById("form-preview-title");
+  const bodyEl = document.getElementById("form-preview-body");
+  const modal = document.getElementById("form-preview-modal");
+
+  if (titleEl) titleEl.textContent = `${form.title} (A4 규격)`;
+  if (bodyEl) bodyEl.innerHTML = form.previewHtml;
+  if (modal) modal.classList.remove("hidden");
+
+  lucide.createIcons();
+}
+
+function closeFormPreview() {
+  const modal = document.getElementById("form-preview-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function printCurrentForm() {
+  window.print();
+}
+
+function copyCurrentForm(formId) {
+  const targetId = formId || (currentPreviewForm ? currentPreviewForm.id : null);
+  const forms = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.safetyForms) || [];
+  const form = forms.find(f => f.id === targetId);
+  if (!form) {
+    alert("복사할 서식을 찾을 수 없습니다.");
+    return;
+  }
+
+  const text = `[${form.title}]
+근거 법령: ${form.lawRef}
+보존 주기: ${form.retention}
+작성 주기: ${form.cycle}
+
+■ 주요 필수 기재 항목:
+${form.items.map((it, idx) => `${idx + 1}. ${it}`).join("\n")}
+
+■ 실무 안내:
+본 서식은 고용노동부 및 한국산업안전보건공단 표준 점검 지침에 따른 필수 법정 양식입니다.`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert(`"${form.title}" 텍스트 서식이 클립보드에 복사되었습니다.\n한글(HWP)이나 엑셀에 붙여넣어 즉시 활용하실 수 있습니다.`);
+  }).catch(() => {
+    alert("클립보드 복사 권한이 제한되어 있습니다. [A4 즉시 인쇄] 기능을 이용해 주세요.");
+  });
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>통합 산업안전보건 관제 시스템 | 케이프라이드 · 보담</title>
+  <title>통합 산업안전보건 관제 포털 | 케이프라이드 · 보담</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
@@ -17,674 +17,687 @@
     body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
     * { word-break: keep-all; }
     .fade-out { opacity: 0; transform: translateY(-10px); transition: all 0.3s ease; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-form-area, #printable-form-area * { visibility: visible; }
+      #printable-form-area { position: absolute; left: 0; top: 0; width: 100%; }
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 antialiased overflow-hidden">
 
-  <!-- 최상단 긴급 공지 띠배너 -->
-  <div id="top-urgent-banner" class="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white text-xs font-semibold py-2 px-4 shadow-sm flex items-center justify-between">
-    <div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
-      <div class="flex items-center gap-2 overflow-hidden">
-        <span class="flex h-2 w-2 relative">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-        </span>
-        <span class="font-bold tracking-wide text-white uppercase text-[10px] bg-black/20 px-2 py-0.5 rounded">긴급 안내</span>
-        <span id="banner-text" class="truncate font-medium text-xs">안전보건 관리 시스템 데이터 동기화 중...</span>
-      </div>
-      <a href="admin.html" class="shrink-0 text-[11px] bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-md transition flex items-center gap-1 font-bold">
-        <span>관리자 수정</span>
-        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-      </a>
-    </div>
-  </div>
+  <!-- 포털 전체 래퍼 (좌측 고정 사이드바 + 우측 워크스페이스) -->
+  <div class="flex h-screen w-screen overflow-hidden">
 
-  <!-- 메인 헤더 & 내비게이션 -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="h-16 flex items-center justify-between">
-        <!-- 로고 및 시스템 타이틀 -->
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-md">
-            <i data-lucide="shield-check" class="w-6 h-6"></i>
+    <!-- ============================================== -->
+    <!-- 1. 좌측 메인 포털 사이드바 (Sidebar) -->
+    <!-- ============================================== -->
+    <aside id="portal-sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800/90 shadow-xl">
+      
+      <!-- 상단 포털 브랜드 로고 -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 via-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-sky-500/20">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <h1 id="header-system-title" class="font-bold text-base sm:text-lg text-slate-900 tracking-tight">통합 산업안전보건 관제 시스템</h1>
-              <span id="cloud-badge" class="hidden sm:inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Supabase 클라우드 실시간</span>
-              </span>
-            </div>
-            <p id="header-subtitle" class="text-xs text-slate-500">(주)케이프라이드 · (주)보담</p>
+            <h1 class="text-sm font-extrabold text-white tracking-tight">산업안전보건 포털</h1>
+            <p class="text-[10px] text-slate-400 font-medium">(주)케이프라이드 · (주)보담</p>
           </div>
         </div>
+        <!-- 모바일 닫기 버튼 -->
+        <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
 
-        <!-- 우측 액션 모음: 법령가이드, 실무팁, 관리자페이지 -->
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <!-- 1. 산재 법령 & 개정 변동점 버튼 -->
-          <button onclick="openLawModal()" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-xs">
-            <i data-lucide="scale" class="w-3.5 h-3.5 text-amber-600"></i>
-            <span class="hidden sm:inline">2025·2026 산재 법령 변동점</span>
-            <span class="sm:hidden">법령 변동</span>
-          </button>
+      <!-- 포털 메뉴 내비게이션 -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto text-xs font-semibold">
+        <div class="px-3 pb-1 text-[10px] font-bold text-slate-400 tracking-wider">안전보건 업무 모듈</div>
 
-          <!-- 2. 초보 담당자 실무 팁 북 버튼 -->
-          <button onclick="openTipsModal()" class="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-xs">
-            <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-sky-600"></i>
-            <span class="hidden sm:inline">초보 담당자 실무 팁</span>
-            <span class="sm:hidden">실무 팁</span>
-          </button>
+        <!-- 1. 대시보드 -->
+        <button onclick="switchPortalTab('dashboard')" id="nav-btn-dashboard" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white bg-sky-600 font-bold shadow-xs transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-200"></i>
+            <span>종합 관제 대시보드</span>
+          </div>
+          <span class="text-[10px] bg-sky-700/80 text-white px-1.5 py-0.5 rounded font-bold">홈</span>
+        </button>
 
-          <!-- 3. 최신 사원연명부 인력 통계 버튼 -->
-          <button onclick="openRosterModal()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-xs">
-            <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span class="hidden sm:inline">사원 인력 통계</span>
-            <span class="sm:hidden">인력 통계</span>
-          </button>
+        <!-- 2. 안전보건 캘린더 (Option 3) -->
+        <button onclick="switchPortalTab('calendar')" id="nav-btn-calendar" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i>
+            <span>법정 안전 캘린더</span>
+          </div>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold">11·12월</span>
+        </button>
 
-          <!-- 4. ISO 45001 관리 전용 팝업 버튼 (NEW!) -->
-          <button onclick="openIsoModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-            <span>ISO 45001</span>
-          </button>
+        <!-- 3. 주기별 점검 & TBM -->
+        <button onclick="switchPortalTab('checklist')" id="nav-btn-checklist" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="check-square" class="w-4 h-4 text-sky-400"></i>
+            <span>주기별 점검 & TBM</span>
+          </div>
+          <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">일~연간</span>
+        </button>
 
-          <!-- 새로고침 버튼 -->
-          <button onclick="refreshDashboard()" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="새로고침">
-            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
-          </button>
+        <!-- 4. ISO 45001 경영센터 -->
+        <button onclick="switchPortalTab('iso45001')" id="nav-btn-iso45001" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+            <span>ISO 45001 경영센터</span>
+          </div>
+          <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">~2027</span>
+        </button>
 
-          <!-- 관리자 페이지 이동 버튼 -->
-          <a href="admin.html" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
-            <i data-lucide="settings" class="w-3.5 h-3.5 text-sky-400"></i>
-            <span>관리자(Admin)</span>
+        <!-- 5. 법정 서식 & 일지 다운로드 (Option 1) -->
+        <button onclick="switchPortalTab('forms')" id="nav-btn-forms" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="folder-down" class="w-4 h-4 text-indigo-400"></i>
+            <span>법정 서식 자료실</span>
+          </div>
+          <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">서식 5종</span>
+        </button>
+
+        <div class="pt-4 px-3 pb-1 text-[10px] font-bold text-slate-400 tracking-wider">현황 통계 & 가이드 북</div>
+
+        <!-- 6. 사원 인력 통계 -->
+        <button onclick="openRosterModal()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
+            <span>사원 인력 통계</span>
+          </div>
+          <span class="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-bold">324명</span>
+        </button>
+
+        <!-- 7. 산재 법령 변동 -->
+        <button onclick="openLawModal()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="scale" class="w-4 h-4 text-amber-400"></i>
+            <span>2025·2026 법령 변동</span>
+          </div>
+        </button>
+
+        <!-- 8. 실무 팁 북 -->
+        <button onclick="openTipsModal()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-400"></i>
+            <span>초보 담당자 실무 팁</span>
+          </div>
+        </button>
+      </nav>
+
+      <!-- 사이드바 하단 정보 & 관리자 링크 -->
+      <div class="p-3.5 border-t border-slate-800 bg-slate-950/60 text-[11px] space-y-2 shrink-0">
+        <div class="flex items-center justify-between text-slate-400">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Supabase 클라우드</span>
+          </span>
+          <span class="font-mono text-[10px] text-emerald-400 font-bold">실시간 연결</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-slate-400 text-[10px]">
+          <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i>
+          <span>매주 금요일 17:55 자동 동기화</span>
+        </div>
+        <a href="admin.html" class="mt-2 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold transition shadow-xs">
+          <i data-lucide="settings" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>관리자 페이지(Admin)</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- 모바일 백드롭 오버레이 -->
+    <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+    <!-- ============================================== -->
+    <!-- 2. 우측 메인 작업 영역 (Main Workspace) -->
+    <!-- ============================================== -->
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+
+      <!-- 상단 긴급 공지 띠배너 -->
+      <div id="top-urgent-banner" class="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white text-xs font-semibold py-1.5 px-4 shadow-xs flex items-center justify-between shrink-0 z-20">
+        <div class="w-full flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            <span class="font-bold tracking-wide text-white uppercase text-[10px] bg-black/25 px-2 py-0.5 rounded">긴급 안내</span>
+            <span id="banner-text" class="truncate font-medium text-xs">안전보건 관리 시스템 데이터 동기화 중...</span>
+          </div>
+          <a href="admin.html" class="shrink-0 text-[10px] bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded transition flex items-center gap-1 font-bold">
+            <span>관리자 수정</span>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
           </a>
         </div>
       </div>
 
-      <!-- 법인별 필터 탭 (케이펙 숨김 처리: 케이프라이드 & 보담 2개 사 중심) -->
-      <div class="border-t border-slate-100 flex space-x-1 sm:space-x-4 py-2 overflow-x-auto text-xs font-semibold">
-        <button onclick="filterCorp('ALL')" id="filter-btn-ALL" class="corp-tab px-3 py-1.5 rounded-lg text-sky-700 bg-sky-50 font-bold transition">전체 (케이프라이드 · 보담 통합)</button>
-        <button onclick="filterCorp('케이프라이드')" id="filter-btn-케이프라이드" class="corp-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">(주)케이프라이드</button>
-        <button onclick="filterCorp('보담')" id="filter-btn-보담" class="corp-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">(주)보담</button>
-        <button onclick="scrollToIsoSection()" class="px-3 py-1.5 rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold transition flex items-center gap-1 border border-emerald-200">
-          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-          <span>🛡️ ISO 45001 전용 센터</span>
-        </button>
+      <!-- 상단 내비게이션 바 & 사업장 필터 -->
+      <header class="bg-white border-b border-slate-200/90 px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0 z-10 shadow-2xs">
+        <div class="flex items-center gap-3">
+          <!-- 모바일 햄버거 메뉴 버튼 -->
+          <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-1.5 rounded-lg hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          
+          <!-- 브레드크럼 위치 표시 -->
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span class="font-medium">안전보건 포털</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span id="current-tab-title" class="font-bold text-slate-900 text-sm">종합 관제 대시보드</span>
+          </div>
+        </div>
+
+        <!-- 우측 액션: 사업장 필터 + 새로고침 -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- 법인별 필터 탭 (케이펙 제외, 케이프라이드 · 보담 2개 사 중심) -->
+          <div class="flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-semibold">
+            <button onclick="setCompanyFilter('all')" id="btn-corp-all" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-white bg-slate-900 shadow-2xs transition">전체 사업장</button>
+            <button onclick="setCompanyFilter('케이프라이드')" id="btn-corp-kpride" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-slate-600 hover:text-slate-900 transition">케이프라이드</button>
+            <button onclick="setCompanyFilter('보담')" id="btn-corp-bodam" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-slate-600 hover:text-slate-900 transition">보담</button>
+          </div>
+
+          <!-- 새로고침 버튼 -->
+          <button onclick="refreshDashboard()" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition border border-slate-200" title="실시간 새로고침">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- 스크롤 가능한 메인 뷰 컨테이너 (각 탭별 화면 전환) -->
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- ============================================== -->
+        <!-- TAB 1: 종합 관제 대시보드 (#portal-view-dashboard) -->
+        <!-- ============================================== -->
+        <div id="portal-view-dashboard" class="portal-tab-content space-y-6">
+          
+          <!-- KPI 핵심 요약 카드 그리드 -->
+          <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- 1. 총 근로자 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <i data-lucide="users" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">2사 총 근로자</span>
+                <div class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5"><span id="kpi-total-workers">324</span><span class="text-xs text-slate-400 font-normal ml-1">명</span></div>
+              </div>
+            </div>
+
+            <!-- 2. ISO 45001 국제인증 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4 cursor-pointer hover:border-emerald-300 transition" onclick="switchPortalTab('iso45001')">
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">ISO 45001 국제인증</span>
+                <div class="text-base sm:text-lg font-extrabold text-emerald-600 mt-0.5">정상 적합 유지 <span class="text-xs text-slate-400 font-normal ml-0.5">(~2027)</span></div>
+              </div>
+            </div>
+
+            <!-- 3. 긴급 D-Day 및 알림 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4 cursor-pointer hover:border-amber-300 transition" onclick="switchPortalTab('calendar')">
+              <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <i data-lucide="bell-ring" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">긴급 D-Day 및 알림</span>
+                <div class="text-xl sm:text-2xl font-extrabold text-amber-600 mt-0.5"><span id="kpi-alerts-count">4</span><span class="text-xs text-slate-400 font-normal ml-1">건</span></div>
+              </div>
+            </div>
+
+            <!-- 4. 법정 검사 설비 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500">법정 검사 설비</span>
+                <div class="text-xl sm:text-2xl font-extrabold text-purple-600 mt-0.5"><span id="kpi-inspections-count">5</span><span class="text-xs text-slate-400 font-normal ml-1">대</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 긴급 D-Day 및 법정 이슈 카드 섹션 (실무 조치 가이드 내장) -->
+          <section class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>
+                <span>긴급 D-Day 및 중요 알림</span>
+              </h2>
+              <button onclick="switchPortalTab('calendar')" class="text-xs text-sky-600 hover:text-sky-800 font-semibold flex items-center gap-1">
+                <span>캘린더에서 전체 보기</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
+
+            <!-- 알림 카드 목록 (app.js 동적 렌더링) -->
+            <div id="alerts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- JS 동적 렌더링 -->
+            </div>
+          </section>
+
+          <!-- 2사 사업장 안전보건 현황 카드 (케이프라이드 & 보담) -->
+          <section class="space-y-3">
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="building-2" class="w-5 h-5 text-sky-600"></i>
+              <span>사업장별 안전보건 운영 지표 (횡성 본사)</span>
+            </h2>
+            <div id="corp-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- JS 동적 렌더링 -->
+            </div>
+          </section>
+
+          <!-- 법정 안전검사 설비 현황 테이블 -->
+          <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-purple-600"></i>
+                  <span>횡성 사업장 법정 안전검사 설비 현황</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">지게차, 수평 컨베이어, 국소배기장치 등 법정 검사 유효기간 관리</p>
+              </div>
+              <a href="admin.html" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">관리자 수정 &rarr;</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                  <tr>
+                    <th class="py-3 px-4">법인</th>
+                    <th class="py-3 px-4">설비명</th>
+                    <th class="py-3 px-4">설치 위치</th>
+                    <th class="py-3 px-4">최근 검사일</th>
+                    <th class="py-3 px-4">차기 검사 예정일</th>
+                    <th class="py-3 px-4">상태</th>
+                    <th class="py-3 px-4">검사 기관</th>
+                  </tr>
+                </thead>
+                <tbody id="inspections-tbody" class="divide-y divide-slate-100">
+                  <!-- JS 동적 렌더링 -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 사내 공지사항 & 안전보건 알림 -->
+          <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+              <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <i data-lucide="megaphone" class="w-4 h-4 text-sky-600"></i>
+                <span>사내 안전보건 공지 및 점검 일정</span>
+              </h3>
+              <a href="admin.html" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">공지 등록 &rarr;</a>
+            </div>
+            <div id="notices-container" class="space-y-3">
+              <!-- JS 동적 렌더링 -->
+            </div>
+          </section>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: 법정 안전 캘린더 (#portal-view-calendar) - Option 3! -->
+        <!-- ============================================== -->
+        <div id="portal-view-calendar" class="portal-tab-content hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6">
+            
+            <!-- 캘린더 헤더 컨트롤 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600 font-bold"><i data-lucide="calendar" class="w-5 h-5"></i></span>
+                  <h2 class="text-base font-bold text-slate-900">월간 법정 안전보건 일정 캘린더</h2>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">법정 검사 만료일, 작업환경측정, 산안위 정기회의, 직무교육 마감 일정 관리</p>
+              </div>
+
+              <!-- 월 선택 탭 (11월 / 12월) -->
+              <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                <button onclick="switchCalendarMonth('2026-11')" id="btn-cal-2026-11" class="cal-month-btn px-4 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs transition">2026년 11월</button>
+                <button onclick="switchCalendarMonth('2026-12')" id="btn-cal-2026-12" class="cal-month-btn px-4 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">2026년 12월</button>
+              </div>
+            </div>
+
+            <!-- 캘린더 본체 & 우측 일정 상세 2단 레이아웃 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <!-- 좌측 달력 그리드 (2열 차지) -->
+              <div class="lg:col-span-2 space-y-3">
+                <!-- 요일 헤더 -->
+                <div class="grid grid-cols-7 text-center font-bold text-xs text-slate-500 pb-2 border-b border-slate-200">
+                  <span class="text-red-500">일</span>
+                  <span>월</span>
+                  <span>화</span>
+                  <span>수</span>
+                  <span>목</span>
+                  <span>금</span>
+                  <span class="text-blue-500">토</span>
+                </div>
+                <!-- 날짜 그리드 동적 생성 -->
+                <div id="calendar-grid-cells" class="grid grid-cols-7 gap-1.5">
+                  <!-- JS 동적 렌더링 -->
+                </div>
+              </div>
+
+              <!-- 우측 선택한 일자 상세 카드 -->
+              <div id="calendar-detail-panel" class="bg-slate-50 rounded-xl border border-slate-200 p-5 flex flex-col justify-between space-y-4">
+                <!-- JS 동적 렌더링 -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: 주기별 점검 & TBM 체크리스트 (#portal-view-checklist) -->
+        <!-- ============================================== -->
+        <div id="portal-view-checklist" class="portal-tab-content hidden space-y-6">
+          <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-sky-50/60 to-white">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold shadow-sm">
+                  <i data-lucide="check-square" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h2 class="text-base font-bold text-slate-900 tracking-tight">주기별 법정 안전 점검 & TBM 체크리스트</h2>
+                  <p class="text-xs text-slate-500 mt-0.5">완료된 항목을 체크하면 자동으로 화면에서 숨겨집니다.</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 text-xs">
+                <span id="checklist-progress-text" class="font-bold text-sky-700 bg-sky-50 px-3 py-1.5 rounded-lg border border-sky-100">진행도: 계산 중...</span>
+                <button onclick="toggleShowCompleted()" id="toggle-completed-btn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition flex items-center gap-1.5">
+                  <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                  <span id="toggle-completed-text">완료 항목 숨김 중</span>
+                </button>
+                <button onclick="resetChecklist()" class="px-3 py-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg font-semibold transition flex items-center gap-1">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>초기화</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 서브 탭 (일별 / 주별 / 월별 / 분기별 / 연간 / ISO 45001) -->
+            <div class="bg-slate-50 border-b border-slate-100 px-5 py-2.5 flex space-x-2 overflow-x-auto text-xs font-semibold">
+              <button onclick="switchChecklistCycle('daily')" id="chk-tab-daily" class="chk-tab px-3 py-1.5 rounded-lg text-sky-700 bg-white shadow-xs font-bold transition">📅 일별 (Daily)</button>
+              <button onclick="switchChecklistCycle('weekly')" id="chk-tab-weekly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">🗓️ 주별 (Weekly)</button>
+              <button onclick="switchChecklistCycle('monthly')" id="chk-tab-monthly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">📆 월별 (Monthly)</button>
+              <button onclick="switchChecklistCycle('quarterly')" id="chk-tab-quarterly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">📊 분기별 (Quarterly)</button>
+              <button onclick="switchChecklistCycle('yearly')" id="chk-tab-yearly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">🎯 연별 (Yearly)</button>
+              <button onclick="switchChecklistCycle('iso')" id="chk-tab-iso" class="chk-tab px-3 py-1.5 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition font-bold flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>🛡️ ISO 45001 심사관리</span>
+              </button>
+            </div>
+
+            <!-- 체크리스트 항목 렌더링 영역 -->
+            <div class="p-5">
+              <div id="checklist-items-container" class="space-y-3">
+                <!-- JS 동적 렌더링 -->
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 4: ISO 45001 안전보건경영시스템 전용 관리 센터 (#portal-view-iso45001) -->
+        <!-- ============================================== -->
+        <div id="portal-view-iso45001" class="portal-tab-content hidden space-y-6">
+          <section id="iso45001-section" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center font-bold">
+                  <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-base font-bold text-white tracking-tight">ISO 45001:2018 안전보건경영시스템 관리 센터</h2>
+                    <span class="text-[10px] bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">인증 정상 유지</span>
+                  </div>
+                  <p class="text-xs text-slate-300 mt-0.5">한국기업인증원(KOCI) · 유효기간: 2024.11.28 ~ 2027.11.27 · (주)케이프라이드 · (주)보담</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 text-xs">
+                <div class="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
+                  <span id="iso-progress-text" class="font-bold text-emerald-400">진행도: 5/11 (45%)</span>
+                </div>
+                <button onclick="toggleIsoHideCompleted()" id="iso-toggle-completed-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition flex items-center gap-1.5 border border-slate-700">
+                  <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                  <span id="iso-toggle-completed-text">완료 항목 숨김 중</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 인증 정보 및 긴급 조직 공백 주의보 -->
+            <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/60 border-b border-slate-200/60 text-xs">
+              <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">인증 유효성</span>
+                <div class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>2027년 11월 27일까지 유효</span>
+                </div>
+                <p class="text-slate-500 leading-relaxed text-[11px]">2026.10.26~29 2차 사후심사 현장수검 완료. 차기 갱신심사는 2027년 하반기 예정.</p>
+              </div>
+
+              <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">인증 범위 (Scope)</span>
+                <div class="text-sm font-bold text-slate-900">식육가공품(소시지/양념육) 생산</div>
+                <p class="text-slate-500 leading-relaxed text-[11px]">케이프라이드(인원 64명 기준 인증) 및 보담(45명 기준) 통합 적용.</p>
+              </div>
+
+              <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl shadow-2xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-bold text-rose-700 uppercase tracking-wide flex items-center gap-1">
+                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                    <span>🚨 조직 공백 주의보</span>
+                  </span>
+                  <span class="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded">시급</span>
+                </div>
+                <div class="text-xs font-bold text-rose-950">관리책임자 및 관리감독자 퇴사</div>
+                <p class="text-rose-800 leading-relaxed text-[11px]">윤현구 이사(책임자) 및 김지혜·김가현 대리 퇴사로 직무대리 및 선임 승계 결재 필수.</p>
+              </div>
+            </div>
+
+            <!-- ISO 45001 전용 체크리스트 항목 렌더링 영역 -->
+            <div class="p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
+                  <span>ISO 45001 심사 및 유지관리 체크리스트 (체크 완료 시 자동 숨김)</span>
+                </h3>
+                <span class="text-[11px] text-slate-500">총 11개 항목 중 사전 완료 5개 자동 반영</span>
+              </div>
+              <div id="iso-checklist-container" class="space-y-3">
+                <!-- JS 동적 렌더링 -->
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 5: 법정 서식 및 일지 다운로드 허브 (#portal-view-forms) - Option 1! -->
+        <!-- ============================================== -->
+        <div id="portal-view-forms" class="portal-tab-content hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-6">
+            
+            <!-- 서식 자료실 헤더 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="p-2 rounded-xl bg-indigo-50 text-indigo-600 font-bold"><i data-lucide="folder-down" class="w-5 h-5"></i></span>
+                  <h2 class="text-base font-bold text-slate-900">법정 필수 안전보건 서식 & 일지 다운로드 센터</h2>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">현장에서 즉시 출력·작성 가능한 표준 A4 양식 및 텍스트 템플릿 제공</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold border border-slate-200">
+                  총 5종 법정 서식 구비
+                </span>
+              </div>
+            </div>
+
+            <!-- 서식 카드 목록 그리드 -->
+            <div id="forms-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <!-- JS 동적 렌더링 -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 모달 팝업 모음 (법령 / 팁 / 공지 / 인력 / 서식미리보기) -->
+  <!-- ============================================== -->
+
+  <!-- 서식 미리보기 & A4 인쇄 모달 -->
+  <div id="form-preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 font-bold"><i data-lucide="file-text" class="w-4 h-4"></i></span>
+          <h3 id="form-preview-title" class="font-bold text-sm text-slate-900">서식 미리보기</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printCurrentForm()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>A4 즉시 인쇄</span>
+          </button>
+          <button onclick="copyCurrentForm()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>텍스트 복사</span>
+          </button>
+          <button onclick="closeFormPreview()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+      <div id="printable-form-area" class="p-6 overflow-y-auto flex-1 bg-slate-100/60">
+        <div id="form-preview-body" class="bg-white shadow-sm border border-slate-200 rounded-xl p-8 max-w-3xl mx-auto">
+          <!-- 동적 서식 삽입 -->
+        </div>
       </div>
     </div>
-  </header>
+  </div>
 
-  <!-- 메인 대시보드 본문 -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-
-    <!-- KPI 요약 카드 그리드 -->
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-          <i data-lucide="users" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <span class="text-xs font-medium text-slate-500">2사 총 근로자</span>
-          <div class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5"><span id="kpi-total-workers">0</span><span class="text-xs text-slate-400 font-normal ml-1">명</span></div>
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-          <i data-lucide="shield-check" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <span class="text-xs font-medium text-slate-500">ISO 45001 국제인증</span>
-          <div class="text-base sm:text-lg font-extrabold text-emerald-600 mt-0.5">정상 적합 유지 <span class="text-xs text-slate-400 font-normal ml-0.5">(~2027)</span></div>
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-          <i data-lucide="bell-ring" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <span class="text-xs font-medium text-slate-500">긴급 D-Day 및 알림</span>
-          <div class="text-xl sm:text-2xl font-extrabold text-amber-600 mt-0.5"><span id="kpi-alerts-count">0</span><span class="text-xs text-slate-400 font-normal ml-1">건</span></div>
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-          <i data-lucide="clipboard-check" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <span class="text-xs font-medium text-slate-500">법정 검사 설비</span>
-          <div class="text-xl sm:text-2xl font-extrabold text-purple-600 mt-0.5"><span id="kpi-inspections-count">0</span><span class="text-xs text-slate-400 font-normal ml-1">대</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 긴급 D-Day 및 법정 이슈 카드 섹션 -->
-    <section class="space-y-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>
-          <span>긴급 D-Day 및 중요 알림</span>
-        </h2>
-        <a href="admin.html" class="text-xs text-sky-600 hover:text-sky-800 font-semibold flex items-center gap-1">
-          <span>알림 추가/수정</span>
-          <i data-lucide="arrow-right" class="w-3 h-3"></i>
-        </a>
-      </div>
-
-      <!-- 실무 팁 콜아웃 -->
-      <div class="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
-        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
-        <div class="flex-1">
-          <strong class="font-bold text-amber-950">💡 초보 실무 팁 (위탁대행 점검):</strong> 
-          외부 위탁기관(대한안전 등)이 방문 후 남긴 순회점검표는 단순 서명만 하면 효력이 부족합니다. 반드시 지적사항에 대한 <strong>사내 개선 요청 → 조치 전/후 사진 확보 → 안전책임자 서명</strong>까지 완료해야 노동부 점검 시 과태료를 면할 수 있습니다.
-        </div>
-      </div>
-
-      <div id="alerts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- JS 동적 렌더링 -->
-      </div>
-    </section>
-
-    <!-- ============================================== -->
-    <!-- ⭐ 신규: 주기별(일·주·월·분기·연간) 실무 체크리스트 (완료 시 숨김 처리 기능) -->
-    <!-- ============================================== -->
-    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-      <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              <i data-lucide="check-square" class="w-4 h-4"></i>
-            </div>
-            <h2 class="text-base font-bold text-slate-900">주기별 안전보건 실무 체크리스트</h2>
-            <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">인수인계 필수</span>
-          </div>
-          <p class="text-xs text-slate-500 mt-1">일별, 주별, 월별, 분기별, 연간 주기별로 확인해야 할 법정 의무와 현장 점검 항목입니다. 체크 완료 시 자동 숨김 처리됩니다.</p>
-        </div>
-
-        <!-- 옵션: 완료 항목 숨김 토글 및 초기화 -->
-        <div class="flex items-center gap-3 text-xs self-start md:self-auto">
-          <div class="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl text-slate-600">
-            <span id="checklist-progress-text" class="font-bold text-sky-700">진행도: 0/0 (0%)</span>
-          </div>
-          <button onclick="toggleShowCompleted()" id="toggle-completed-btn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition flex items-center gap-1">
-            <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
-            <span id="toggle-completed-text">완료 항목 숨김 중</span>
-          </button>
-          <button onclick="resetChecklist()" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition" title="체크리스트 전체 초기화">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- 주기별 서브 탭 (일별 / 주별 / 월별 / 분기별 / 연간) -->
-      <div class="bg-slate-50 border-b border-slate-100 px-5 py-2.5 flex space-x-2 overflow-x-auto text-xs font-semibold">
-        <button onclick="switchChecklistCycle('daily')" id="chk-tab-daily" class="chk-tab px-3 py-1.5 rounded-lg text-sky-700 bg-white shadow-xs font-bold transition">📅 일별 (Daily)</button>
-        <button onclick="switchChecklistCycle('weekly')" id="chk-tab-weekly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">🗓️ 주별 (Weekly)</button>
-        <button onclick="switchChecklistCycle('monthly')" id="chk-tab-monthly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">📆 월별 (Monthly)</button>
-        <button onclick="switchChecklistCycle('quarterly')" id="chk-tab-quarterly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">📊 분기별 (Quarterly)</button>
-        <button onclick="switchChecklistCycle('yearly')" id="chk-tab-yearly" class="chk-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">🎯 연별 (Yearly)</button>
-        <button onclick="switchChecklistCycle('iso')" id="chk-tab-iso" class="chk-tab px-3 py-1.5 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition font-bold flex items-center gap-1.5">
-          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-          <span>🛡️ ISO 45001 심사관리</span>
-        </button>
-      </div>
-
-      <!-- 체크리스트 항목 렌더링 영역 -->
-      <div class="p-5">
-        <div id="checklist-items-container" class="space-y-3">
-          <!-- JS 동적 렌더링 -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================== -->
-    <!-- 🛡️ 신규: ISO 45001 안전보건경영시스템 전용 관리 섹션 -->
-    <!-- ============================================== -->
-    <section id="iso45001-section" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-      <!-- 헤더 -->
-      <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center font-bold">
-            <i data-lucide="shield-check" class="w-6 h-6"></i>
+  <!-- 산재 법령 변동점 모달 -->
+  <div id="law-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-amber-50/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-700 flex items-center justify-center font-bold">
+            <i data-lucide="scale" class="w-4 h-4"></i>
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-base font-bold text-white tracking-tight">ISO 45001:2018 안전보건경영시스템 관리 센터</h2>
-              <span class="text-[10px] bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">인증 정상 유지</span>
-            </div>
-            <p class="text-xs text-slate-300 mt-0.5">한국기업인증원(KOCI) · 유효기간: 2024.11.28 ~ 2027.11.27 · (주)케이프라이드 · (주)보담</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 text-xs">
-          <div class="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
-            <span id="iso-progress-text" class="font-bold text-emerald-400">진행도: 5/11 (45%)</span>
-          </div>
-          <button onclick="toggleIsoHideCompleted()" id="iso-toggle-completed-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition flex items-center gap-1">
-            <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
-            <span id="iso-toggle-completed-text">완료 항목 숨김 중</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 요약 안내 및 조직 공백 경보 배너 -->
-      <div class="p-5 border-b border-slate-100 space-y-3 bg-slate-50/50">
-        <!-- 긴급 조직 공백 알림 -->
-        <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 text-xs text-rose-950">
-          <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
-          <div class="flex-1">
-            <strong class="font-bold text-rose-900 block mb-0.5">🚨 당면 현장 관리조직 공백 긴급 조치 필요 (인수인계 핵심):</strong>
-            문서상 안전보건관리책임자(윤현구 부장) 및 관리감독자 2명(김지혜·김가현 과장) 퇴사로 인한 공석 상태입니다.  
-            현재 <strong>김희영 팀장(인적자원팀장, 실무 총괄) 및 김계원 과장(가공)</strong> 중심으로 대응 중이며,  
-            <strong>현장 반장/조장 2명을 신규 관리감독자로 선임(지정서 발급)</strong>하고 공장장을 관리책임자로 갱신 선임해야 심사 부적합을 피할 수 있습니다.
-          </div>
-        </div>
-
-        <!-- 3개 법인 인증 개요 카드 -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div class="p-3 bg-white border border-slate-200 rounded-xl">
-            <div class="text-[11px] font-bold text-slate-500 mb-1">(주)케이프라이드</div>
-            <div class="font-bold text-slate-900 text-sm">2차 사후심사 수검 완료</div>
-            <div class="text-[11px] text-slate-500 mt-1">등록: kociO-2d45211 (유효: ~2027.11)</div>
-          </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-xl">
-            <div class="text-[11px] font-bold text-slate-500 mb-1">(주)보담</div>
-            <div class="font-bold text-slate-900 text-sm">2차 사후심사 수검 완료</div>
-            <div class="text-[11px] text-slate-500 mt-1">등록: kociO-2d45213 (유효: ~2027.12)</div>
-          </div>
-          <div class="p-3 bg-slate-100 border border-slate-200 rounded-xl opacity-75">
-            <div class="text-[11px] font-bold text-slate-400 mb-1">백두대간영농조합법인</div>
-            <div class="font-bold text-slate-500 text-sm">심사 공식 제외 완료</div>
-            <div class="text-[11px] text-slate-400 mt-1">인력 이동으로 관리 종결</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ISO 45001 전용 체크리스트 항목 렌더링 영역 -->
-      <div class="p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-            <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
-            ISO 45001 심사 및 유지관리 체크리스트 (체크 완료 시 자동 숨김)
-          </h3>
-          <span class="text-[11px] text-slate-400">이미 완료된 5건은 자동 체크됨</span>
-        </div>
-        <div id="iso-checklist-container" class="space-y-3">
-          <!-- JS 동적 렌더링 -->
-        </div>
-      </div>
-    </section>
-
-    <!-- 2사(케이프라이드·보담) 법인별 안전보건 현황 카드 & 통계 차트 -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- 법인 지표 카드 (2칸) -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="building-2" class="w-5 h-5 text-sky-600"></i>
-            <span>(주)케이프라이드 · (주)보담 안전보건 현황</span>
-          </h2>
-          <span class="text-xs text-slate-400 font-medium">실시간 동기화</span>
-        </div>
-
-        <!-- 실무 팁 콜아웃 -->
-        <div class="p-2.5 bg-sky-50/70 border border-sky-100 rounded-lg flex items-center gap-2 text-xs text-sky-900">
-          <i data-lucide="info" class="w-4 h-4 text-sky-600 shrink-0"></i>
-          <span><strong>💡 팁:</strong> 제조업 상시근로자 50인 이상(케이프라이드, 보담)은 <strong>산업안전보건위원회 분기 1회 개최 및 회의록 사내 공지</strong>가 법적 의무입니다.</span>
-        </div>
-
-        <div id="corp-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-          <!-- JS 동적 렌더링 -->
-        </div>
-      </div>
-
-      <!-- 이행률 비교 차트 (1칸) -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col">
-        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-2">
-          <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-600"></i>
-          <span>위험성평가 및 수검률</span>
-        </h2>
-        <p class="text-xs text-slate-400 mb-4">케이프라이드 vs 보담 이행률 비교</p>
-        <div class="relative flex-1 min-h-[220px]">
-          <canvas id="safetyStatsChart"></canvas>
-        </div>
-      </div>
-    </section>
-
-    <!-- 법정 안전검사 설비 현황 테이블 -->
-    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-      <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="shield-alert" class="w-5 h-5 text-emerald-600"></i>
-            <span>법정 안전검사 설비 및 기계기구 관리</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">지게차, 컨베이어, 공조배기, 압력용기 등 법정 검사 유효기간 점검</p>
-        </div>
-        <a href="admin.html" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition self-start sm:self-auto">
-          설비 추가/수정
-        </a>
-      </div>
-
-      <!-- 실무 팁 콜아웃 -->
-      <div class="px-5 py-2.5 bg-emerald-50/60 border-b border-emerald-100 flex items-center gap-2 text-xs text-emerald-900">
-        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
-        <span><strong>💡 설비 검사 팁:</strong> 법정 안전검사는 <strong>유효기간 만료 30일 전</strong>에 안전보건공단/안전기술협회에 신청해야 하며, 현장 설비에 <strong>합격증명서 스티커</strong>가 부착되어 있어야 합니다.</span>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-slate-50 text-slate-500 font-semibold uppercase border-b border-slate-100">
-            <tr>
-              <th class="py-3 px-4 w-28">법인</th>
-              <th class="py-3 px-4">설비명 / 기종</th>
-              <th class="py-3 px-4">설치 위치</th>
-              <th class="py-3 px-4 w-28">최근 검사일</th>
-              <th class="py-3 px-4 w-28">차기 검사일</th>
-              <th class="py-3 px-4 w-28">판정 상태</th>
-              <th class="py-3 px-4 w-28">검사 기관</th>
-              <th class="py-3 px-4">비고</th>
-            </tr>
-          </thead>
-          <tbody id="inspections-tbody" class="divide-y divide-slate-100">
-            <!-- JS 동적 렌더링 -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 하단 그리드: 공지사항 & 로컬 업무 서류 실시간 감시 -->
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- 1. 사내 안전보건 공지사항 -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="megaphone" class="w-5 h-5 text-sky-600"></i>
-            <span>사내 안전보건 공지 및 지침</span>
-          </h2>
-          <a href="admin.html" class="text-xs text-sky-600 hover:text-sky-800 font-semibold">공지 작성</a>
-        </div>
-
-        <div class="p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600">
-          <strong>💡 교육 팁:</strong> 관리감독자 및 근로자 안전보건 교육일지는 <strong>참석자 자필 서명부와 교안을 3년간 의무 보존</strong>해야 합니다.
-        </div>
-
-        <div id="notices-container" class="space-y-3 flex-1 pt-1">
-          <!-- JS 동적 렌더링 -->
-        </div>
-      </div>
-
-      <!-- 2. 최근 수정된 안전보건 서류 모니터링 (실시간 감시 API 연동) -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="folder-clock" class="w-5 h-5 text-purple-600"></i>
-              <span>최신 안전보건 서류 감시</span>
-            </h2>
-            <span id="local-api-status" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold">동기화 확인</span>
-          </div>
-          <span class="text-xs text-slate-400">폴더 내 업무 서류</span>
-        </div>
-
-        <div class="p-2 bg-rose-50 border border-rose-100 rounded-lg text-xs text-rose-800">
-          <strong>🚨 골든타임 팁:</strong> 휴업 3일 이상 산재 발생 시 <strong>1개월 이내 노동부 산재조사표 제출</strong> 필수 (미제출 시 과태료 1,500만원).
-        </div>
-
-        <div id="recent-files-list" class="space-y-2 flex-1 pt-1">
-          <div class="text-center py-8 text-xs text-slate-400">파일 목록을 불러오는 중...</div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- 산재 법령 모달 -->
-  <div id="law-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <i data-lucide="scale" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="font-bold text-base text-slate-900">산업안전보건법 & 중대재해처벌법 주요 변동점</h3>
-            <p class="text-xs text-slate-500">2025년 대비 2026년 최신 개정 사항 및 실무 대응 요령</p>
+            <h3 class="font-bold text-base text-slate-900">2025 · 2026 산재 법령 주요 개정 변동점</h3>
+            <p class="text-xs text-slate-500">중대재해처벌법 50인 미만 확대 및 산업안전보건법 강화 핵심 요약</p>
           </div>
         </div>
         <button onclick="closeLawModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div id="law-changes-list" class="space-y-4 text-xs"></div>
-      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-        <button onclick="closeLawModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">확인 및 닫기</button>
+      <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed" id="law-modal-body"></div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <button onclick="closeLawModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
       </div>
     </div>
   </div>
 
   <!-- 초보 담당자 실무 팁 북 모달 -->
-  <div id="tips-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
-            <i data-lucide="lightbulb" class="w-5 h-5"></i>
+  <div id="tips-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-sky-50/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-700 flex items-center justify-center font-bold">
+            <i data-lucide="lightbulb" class="w-4 h-4"></i>
           </div>
           <div>
-            <h3 class="font-bold text-base text-slate-900">초보 안전보건 담당자 필수 실무 팁 & 실수 방지 가이드</h3>
-            <p class="text-xs text-slate-500">현장에서 가장 까먹기 쉽고 적발 시 치명적인 핵심 7대 체크포인트</p>
+            <h3 class="font-bold text-base text-slate-900">초보 안전보건 담당자 실무 가이드 팁 북</h3>
+            <p class="text-xs text-slate-500">실제 현장 감독 때 털리지 않는 실전 대처 노하우</p>
           </div>
         </div>
         <button onclick="closeTipsModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div class="space-y-5 text-xs">
-        <div class="p-4 bg-rose-50/70 border border-rose-200 rounded-xl">
-          <h4 class="font-bold text-xs text-rose-950 flex items-center gap-1.5 mb-2">
-            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i> 놓치면 즉시 과태료! 법정 기한 요약표
-          </h4>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead class="text-slate-600 font-bold border-b border-rose-200 text-[11px]">
-                <tr>
-                  <th class="py-1 px-2">보고 항목</th>
-                  <th class="py-1 px-2">법정 기한</th>
-                  <th class="py-1 px-2">미이행 시 과태료/벌칙</th>
-                  <th class="py-1 px-2">제출처</th>
-                </tr>
-              </thead>
-              <tbody id="deadline-guide-tbody" class="divide-y divide-rose-100 text-[11px]"></tbody>
-            </table>
-          </div>
-        </div>
-        <div id="practical-tips-list" class="space-y-4"></div>
-      </div>
-      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-        <button onclick="closeTipsModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">확인 및 닫기</button>
+      <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed" id="tips-modal-body"></div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <button onclick="closeTipsModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- 공지사항 상세 모달 -->
-  <div id="notice-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 relative">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-        <span id="modal-notice-target" class="text-xs font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-700">전 법인</span>
-        <button onclick="closeNoticeModal()" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <h3 id="modal-notice-title" class="font-bold text-base text-slate-900 mb-1 leading-snug">공지 제목</h3>
-      <div class="flex items-center gap-3 text-[11px] text-slate-400 mb-4 pb-3 border-b border-slate-100">
-        <span id="modal-notice-author">작성자</span>
-        <span>•</span>
-        <span id="modal-notice-date">작성일</span>
-      </div>
-      <div id="modal-notice-content" class="text-xs text-slate-700 leading-relaxed whitespace-pre-line mb-6">
-        본문 내용
-      </div>
-      <div class="flex justify-end">
-        <button onclick="closeNoticeModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">닫기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 사원연명부 기반 안전보건 인력 현황 모달 (개인정보 보호 비식별) -->
-  <div id="roster-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-            <i data-lucide="users" class="w-5 h-5"></i>
+  <!-- 사원 인력 통계 모달 -->
+  <div id="roster-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-indigo-50/60">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-700 flex items-center justify-center font-bold">
+            <i data-lucide="users" class="w-4 h-4"></i>
           </div>
           <div>
-            <h3 class="font-bold text-base text-slate-900">2사 안전보건 관리 인력 현황</h3>
-            <p class="text-xs text-slate-500">최신 사원연명부 기준 부서별 인원 및 성별 통계 (개인정보 비식별화 완료)</p>
+            <h3 class="font-bold text-base text-slate-900">2026년 최신 사원 인력 현황 (개인정보 비식별화)</h3>
+            <p class="text-xs text-slate-500">프로젝트 폴더 내 최신 사원연명부 원본(Numbers) 데이터 파싱 집계</p>
           </div>
         </div>
         <button onclick="closeRosterModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
-      <!-- 개인정보 보호 안내 뱃지 -->
-      <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl mb-4 flex items-center gap-2 text-xs text-emerald-900">
-        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0"></i>
-        <span><strong>개인정보 보호 조치 완료:</strong> 주민등록번호, 연락처, 개인 식별 정보는 일체 배제하고 안전관리 부서별 통계만 표출합니다.</span>
-      </div>
-
-      <!-- 요약 KPI 카드 -->
-      <div class="grid grid-cols-3 gap-3 mb-5 text-center">
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-          <span class="text-[11px] text-slate-500 font-medium">2사 총 관리인원</span>
-          <div class="text-lg font-extrabold text-slate-900 mt-0.5">324명</div>
+      <div class="p-6 overflow-y-auto space-y-5 text-xs" id="roster-modal-body">
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="text-slate-500 text-[11px]">통합 총원</span>
+            <div class="text-lg font-bold text-slate-900 mt-0.5">324명</div>
+          </div>
+          <div class="p-3 bg-sky-50 rounded-xl border border-sky-200 text-sky-900">
+            <span class="text-sky-600 text-[11px]">(주)케이프라이드</span>
+            <div class="text-lg font-bold mt-0.5">225명</div>
+          </div>
+          <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-indigo-900">
+            <span class="text-indigo-600 text-[11px]">(주)보담</span>
+            <div class="text-lg font-bold mt-0.5">99명</div>
+          </div>
         </div>
-        <div class="p-3 bg-sky-50/70 border border-sky-100 rounded-xl">
-          <span class="text-[11px] text-sky-700 font-medium">케이프라이드 (최신 09월)</span>
-          <div class="text-lg font-extrabold text-sky-900 mt-0.5">225명</div>
-        </div>
-        <div class="p-3 bg-purple-50/70 border border-purple-100 rounded-xl">
-          <span class="text-[11px] text-purple-700 font-medium">보담 (최신 10월)</span>
-          <div class="text-lg font-extrabold text-purple-900 mt-0.5">99명</div>
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <div class="bg-slate-50 px-4 py-2 font-bold text-slate-700 border-b border-slate-200 text-xs">부서별 인원 분포표</div>
+          <div class="divide-y divide-slate-100 max-h-60 overflow-y-auto" id="roster-dept-list"></div>
         </div>
       </div>
-
-      <!-- 부서별 인원 상세 목록 (케이프라이드 & 보담) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <!-- 케이프라이드 -->
-        <div class="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-            <h4 class="font-bold text-sm text-slate-900">(주)케이프라이드</h4>
-            <span class="text-[11px] font-semibold text-slate-500">정규 133 / 계약 91</span>
-          </div>
-          <div class="space-y-1.5" id="roster-kpride-list">
-            <!-- JS 동적 렌더링 -->
-          </div>
-        </div>
-
-        <!-- 보담 -->
-        <div class="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-            <h4 class="font-bold text-sm text-slate-900">(주)보담</h4>
-            <span class="text-[11px] font-semibold text-slate-500">남 34 / 여 65</span>
-          </div>
-          <div class="space-y-1.5" id="roster-bodam-list">
-            <!-- JS 동적 렌더링 -->
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-        <button onclick="closeRosterModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">닫기</button>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <button onclick="closeRosterModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- ISO 45001 전용 팝업 모달 -->
-  <div id="iso-detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 border border-slate-200 relative max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-            <i data-lucide="shield-check" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="font-bold text-base text-slate-900">ISO 45001:2018 안전보건경영시스템 종합 현황</h3>
-            <p class="text-xs text-slate-500">한국기업인증원(KOCI) · (주)케이프라이드 · (주)보담 (유효기간: ~2027.11)</p>
-          </div>
-        </div>
-        <button onclick="closeIsoModal()" class="text-slate-400 hover:text-slate-600">
+  <!-- 공지사항 상세 모달 -->
+  <div id="notice-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <h3 id="modal-notice-title" class="font-bold text-base text-slate-900 leading-snug"></h3>
+        <button onclick="closeNoticeModal()" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
-      <!-- 조직 공백 긴급 경보 -->
-      <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-xl mb-4 text-xs text-rose-950 flex items-start gap-2.5">
-        <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
-        <div>
-          <strong class="font-bold text-rose-900 block mb-0.5">🚨 현장 관리조직 공백 긴급 조치 사항:</strong>
-          안전보건관리책임자(윤현구 부장) 및 관리감독자 2명(김지혜·김가현 과장) 퇴사 공석 발생!  
-          생산 반장/조장 2명을 신규 관리감독자로 선임(지정서 발급 및 연 16시간 교육)하고, 공장장을 관리책임자로 명의 갱신해야 심사 부적합을 피할 수 있습니다. (실무 총괄: 김희영 인적자원팀장)
-        </div>
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <span id="modal-notice-author" class="font-medium"></span>
+        <span>&bull;</span>
+        <span id="modal-notice-date"></span>
+        <span>&bull;</span>
+        <span id="modal-notice-corp" class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold"></span>
       </div>
-
-      <!-- 2사 인증 상태 요약 -->
-      <div class="grid grid-cols-2 gap-3 mb-4 text-xs">
-        <div class="p-3 bg-sky-50/70 border border-sky-100 rounded-xl">
-          <strong class="text-slate-900 font-bold block mb-1">(주)케이프라이드</strong>
-          <span class="text-slate-600">등록: kociO-2d45211</span><br>
-          <span class="text-emerald-700 font-bold">유효기간: 2024.11.28 ~ 2027.11.27</span><br>
-          <span class="text-slate-500 text-[11px]">2026.10.28~29 2차 사후심사 완료</span>
-        </div>
-        <div class="p-3 bg-purple-50/70 border border-purple-100 rounded-xl">
-          <strong class="text-slate-900 font-bold block mb-1">(주)보담</strong>
-          <span class="text-slate-600">등록: kociO-2d45213</span><br>
-          <span class="text-emerald-700 font-bold">유효기간: 2024.12.02 ~ 2027.12.01</span><br>
-          <span class="text-slate-500 text-[11px]">2026.10.26~27 2차 사후심사 완료</span>
-        </div>
-      </div>
-
-      <!-- 모달 내 체크리스트 영역 -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
-            ISO 45001 심사 및 유지관리 체크리스트
-          </h4>
-          <span class="text-[11px] font-bold text-emerald-700" id="iso-modal-progress">진행도: 5/11</span>
-        </div>
-        <div id="iso-modal-checklist-container" class="space-y-2.5">
-          <!-- JS 동적 렌더링 -->
-        </div>
-      </div>
-
-      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-        <button onclick="closeIsoModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl">닫기</button>
+      <div id="modal-notice-content" class="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 min-h-[100px] whitespace-pre-wrap"></div>
+      <div class="flex justify-end pt-2">
+        <button onclick="closeNoticeModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- 푸터 -->
-  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p>© 2026 케이프라이드 · 보담 산업안전보건 통합 관제 시스템. All rights reserved.</p>
-      <div class="flex items-center gap-3">
-        <span class="flex items-center gap-1.5 text-slate-600 font-medium">
-          <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-500"></i>
-          <span>Supabase Cloud Connected</span>
-        </span>
-        <span>•</span>
-        <a href="admin.html" class="text-sky-600 hover:text-sky-800 font-bold">관리자 콘솔 접속</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- 스크립트 모음 -->
+  <!-- 스크립트 로드 순서: DB Client -> Tips/Data -> App -->
   <script src="supabaseClient.js"></script>
   <script src="safetyTipsData.js"></script>
   <script src="app.js"></script>

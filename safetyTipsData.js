@@ -487,3 +487,334 @@ window.SAFETY_TIPS_DATA.isoData = ISO45001_DATA;
 PERIODIC_CHECKLISTS.iso = ISO45001_DATA.checklist;
 window.SAFETY_TIPS_DATA.periodicChecklists = PERIODIC_CHECKLISTS;
 
+// ==========================================
+// 6. 월간 법정 안전보건 캘린더 데이터 (Option 3)
+// ==========================================
+const SAFETY_CALENDAR_EVENTS = [
+  {
+    id: "cal-1",
+    date: "2026-11-06",
+    title: "컨베이어 2기 재검사 합격필증 확인 마감",
+    type: "critical",
+    corp: "케이프라이드",
+    category: "법정안전검사",
+    desc: "N-1, N-2 수평 컨베이어 검사유효기간(2024.03.03) 경과. 공무팀 확인 및 안전보건공단 포털(kosa.kosha.or.kr) 재발급 편철.",
+    tip: "💡 노동부 불시감독 시 미검사 설비 사용은 즉시 사용중지 명령 및 1,000만 원 이하 과태료 대상입니다.",
+    ddayText: "오늘 마감 (D-Day)"
+  },
+  {
+    id: "cal-2",
+    date: "2026-11-06",
+    title: "안전보건관리책임자 교육 수료증 회수",
+    type: "warning",
+    corp: "케이프라이드/보담",
+    category: "법정교육",
+    desc: "이승수(10.15 보수), 김태열(10.28 신규) 관리책임자 교육 수료증 사본 출력 및 바인더 편철.",
+    tip: "💡 수강 통지서만으로는 노동부 점검 시 인정되지 않으므로 온라인 수료증 원본 사본을 반드시 편철해야 합니다.",
+    ddayText: "오늘 마감"
+  },
+  {
+    id: "cal-3",
+    date: "2026-11-10",
+    title: "ISO 45001 사후심사 결과보고서 수령",
+    type: "info",
+    corp: "전 법인",
+    category: "ISO45001",
+    desc: "한국기업인증원(KOCI) 김용식 심사원으로부터 2차 사후심사 결과보고서 수령 및 부적합 시정조치서 작성 준비.",
+    tip: "💡 지적된 경부적합/권고사항은 접수 후 30일 이내에 시정조치 결과서를 제출해야 인증이 유지됩니다.",
+    ddayText: "D-4"
+  },
+  {
+    id: "cal-4",
+    date: "2026-11-10",
+    title: "대한안전관리본부 안전대행 계약 연장 확인",
+    type: "warning",
+    corp: "공통",
+    category: "전문기관위탁",
+    desc: "10.31 계약기간 만료에 따른 2026년 계약 자동연장 확인 공문 수령 및 6~10월 방문기술지도 일지 편철.",
+    tip: "💡 위탁계약 공백 시 안전관리자 미선임으로 간주되어 500만 원 이하 과태료가 부과될 수 있습니다.",
+    ddayText: "D-4"
+  },
+  {
+    id: "cal-5",
+    date: "2026-11-15",
+    title: "사내도급업체 협의체 회의 및 점검표 확인",
+    type: "warning",
+    corp: "보담(조인테크) / 케이프라이드(케이펙)",
+    category: "도급관리",
+    desc: "도급인-수급인 11월 안전보건협의체 정기회의록 및 2일에 1회 작업장 순회점검 일지 누락 점검.",
+    tip: "💡 산안법 제64조에 따라 사내도급이 상주하는 경우 월 1회 협의체 회의 및 분기 1회 합동점검이 법적 강행규정입니다.",
+    ddayText: "D-9"
+  },
+  {
+    id: "cal-6",
+    date: "2026-11-20",
+    title: "중처법 상반기 반기점검 결재문서 보관 확인",
+    type: "warning",
+    corp: "전 법인",
+    category: "중대재해처벌법",
+    desc: "중대재해처벌법상 반기 1회 이상 안전보건 관계법령 의무이행 점검 보고서 경영책임자 결재문서 편철 점검.",
+    tip: "💡 중처법 조사 시 가장 먼저 확인하는 문서입니다. 대표이사 서명 결재본이 바인더에 보관되어 있어야 합니다.",
+    ddayText: "D-14"
+  },
+  {
+    id: "cal-7",
+    date: "2026-11-25",
+    title: "2026년 4분기 산업안전보건위원회 정기회의",
+    type: "info",
+    corp: "전 법인",
+    category: "회의체",
+    desc: "노사 동수 위원(각 5인 이상) 참석 4분기 정기회의 개최 (동절기 한파 방한용품 및 난방설비 안전점검 안건 상정).",
+    tip: "💡 회의 7일 전(11.18까지) 일시·장소·안건을 노사 위원에게 사전 통지해야 적법한 회의로 인정됩니다.",
+    ddayText: "D-19"
+  },
+  {
+    id: "cal-8",
+    date: "2026-12-18",
+    title: "하반기 작업환경측정 예정일",
+    type: "warning",
+    corp: "케이프라이드",
+    category: "작업환경측정",
+    desc: "상반기(06.18) 패티가공실 소음 89.8 dB(A) 측정에 따른 6개월 단축 측정일. 건강한일터 사전 예약 확정 요망.",
+    tip: "💡 소음 노출 기준 85dB 초과 부서는 6개월마다 측정해야 합니다. 측정 당일 해당 공정이 최대 부하로 가동되어야 합니다.",
+    ddayText: "D-42"
+  }
+];
+
+// ==========================================
+// 7. 법정 필수 서식 및 일지 다운로드 허브 (Option 1)
+// ==========================================
+const SAFETY_FORMS_DATA = [
+  {
+    id: "form-tbm",
+    category: "일일 현장 점검",
+    title: "작업 전 10분 안전미팅(TBM) 일지",
+    format: "HWP / XLSX / PDF",
+    lawRef: "고용노동부 TBM 가이드라인 및 중처법",
+    retention: "3년 보존",
+    cycle: "매일 작업 전 (10분)",
+    desc: "생산 공정별 관리감독자가 주관하여 당일 작업 위험요인을 공유하고 근로자 참석 서명을 받는 법정 표준 양식",
+    items: ["일시 및 작업장소", "공정별 작업내용", "주요 유해·위험요인 (끼임/미끄러짐/소음)", "보호구 착용 점검", "참석 근로자 서명란"],
+    previewHtml: `
+      <div class="border border-slate-300 p-6 bg-white text-slate-800 font-sans text-xs space-y-4">
+        <div class="text-center border-b pb-3">
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">작업 전 10분 안전미팅(TBM) 활동 일지</h2>
+          <p class="text-[11px] text-slate-500 mt-1">(주)케이프라이드 · (주)보담 횡성 사업장</p>
+        </div>
+        <table class="w-full border-collapse border border-slate-300 text-center text-[11px]">
+          <tr class="bg-slate-100">
+            <th class="border border-slate-300 p-1.5 w-24">실시 일자</th>
+            <td class="border border-slate-300 p-1.5">2026년 &nbsp;&nbsp;월 &nbsp;&nbsp;일 ( &nbsp; )</td>
+            <th class="border border-slate-300 p-1.5 w-24">실시 시간</th>
+            <td class="border border-slate-300 p-1.5"> &nbsp;:&nbsp; ~ &nbsp;:&nbsp; (10분)</td>
+          </tr>
+          <tr>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">소속 부서</th>
+            <td class="border border-slate-300 p-1.5">생산부 ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ) 라인</td>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">진행자(관리감독자)</th>
+            <td class="border border-slate-300 p-1.5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명/인)</td>
+          </tr>
+        </table>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">1. 당일 작업 내용 및 중점 위험요인 공유</h4>
+          <div class="border border-slate-300 p-3 min-h-[60px] text-slate-600 bg-slate-50/50">
+            • 가공육 원료 이송 컨베이어 투입 시 회전체 접촉/끼임 주의<br>
+            • 바닥 물기 및 기름기로 인한 미끄러짐 방지 (위생안전화 착용 철저)<br>
+            • 패티 성형기 및 포장 프레스 가동 중 안전센서/인터록 해제 절대 금지
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">2. 개인보호구 착용 및 건강상태 확인</h4>
+          <div class="border border-slate-300 p-2.5 flex justify-around text-slate-700 bg-slate-50/50">
+            <span>[ ] 위생모/안전모</span>
+            <span>[ ] 안전화 (미끄럼방지)</span>
+            <span>[ ] 방음 귀마개</span>
+            <span>[ ] 위생장갑/방진마스크</span>
+            <span>[ ] 작업자 건강 이상 무</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">3. 참석 근로자 서명부 (총 &nbsp;&nbsp;&nbsp; 명 참석)</h4>
+          <table class="w-full border-collapse border border-slate-300 text-center text-[10px]">
+            <tr class="bg-slate-100 font-bold">
+              <td class="border border-slate-300 p-1 w-10">No</td><td class="border border-slate-300 p-1">성명</td><td class="border border-slate-300 p-1 w-20">서명</td>
+              <td class="border border-slate-300 p-1 w-10">No</td><td class="border border-slate-300 p-1">성명</td><td class="border border-slate-300 p-1 w-20">서명</td>
+            </tr>
+            <tr><td class="border border-slate-300 p-1.5">1</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5">5</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td></tr>
+            <tr><td class="border border-slate-300 p-1.5">2</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5">6</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td></tr>
+            <tr><td class="border border-slate-300 p-1.5">3</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5">7</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td></tr>
+            <tr><td class="border border-slate-300 p-1.5">4</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5">8</td><td class="border border-slate-300 p-1.5"></td><td class="border border-slate-300 p-1.5"></td></tr>
+          </table>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "form-forklift",
+    category: "일일 현장 점검",
+    title: "전동지게차 작업시작 전 일일점검표",
+    format: "HWP / XLSX / PDF",
+    lawRef: "산업안전보건기준에 관한 규칙 제178조",
+    retention: "3년 보존",
+    cycle: "매일 1회 운행 전 (운전자 직접 작성)",
+    desc: "1일 1장 운전석 옆 바인더에 비치하여 제동장치, 조향장치, 경보기, 포크 상태를 점검하는 법정 의무 점검표",
+    items: ["제동장치 및 조종장치 기능", "하역장치 및 유압장치 이상 유무", "전조등·후미등·후진경보기 및 안전벨트", "타이어 공기압 및 휠 마모 상태"],
+    previewHtml: `
+      <div class="border border-slate-300 p-6 bg-white text-slate-800 font-sans text-xs space-y-4">
+        <div class="text-center border-b pb-3">
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">전동지게차 작업시작 전 점검표</h2>
+          <p class="text-[11px] text-slate-500 mt-1">산업안전보건기준에 관한 규칙 제178조 관련 / 횡성 사업장</p>
+        </div>
+        <table class="w-full border-collapse border border-slate-300 text-center text-[11px]">
+          <tr class="bg-slate-100">
+            <th class="border border-slate-300 p-1.5 w-24">차량 번호(호기)</th><td class="border border-slate-300 p-1.5">도요타 2.5톤 (1호기)</td>
+            <th class="border border-slate-300 p-1.5 w-24">점검 일자</th><td class="border border-slate-300 p-1.5">2026년 &nbsp;&nbsp;월 &nbsp;&nbsp;일</td>
+          </tr>
+          <tr>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">운전자 성명</th><td class="border border-slate-300 p-1.5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명)</td>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">관리감독자 확인</th><td class="border border-slate-300 p-1.5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</td>
+          </tr>
+        </table>
+        <table class="w-full border-collapse border border-slate-300 text-[11px]">
+          <tr class="bg-slate-100 font-bold text-center">
+            <td class="border border-slate-300 p-1.5 w-12">No</td><td class="border border-slate-300 p-1.5">점검 항목</td><td class="border border-slate-300 p-1.5 w-20">판정 (O/X)</td><td class="border border-slate-300 p-1.5">조치 내용 및 비고</td>
+          </tr>
+          <tr><td class="border border-slate-300 p-1.5 text-center">1</td><td class="border border-slate-300 p-1.5">제동장치(브레이크) 및 조향장치 기능 이상 유무</td><td class="border border-slate-300 p-1.5 text-center">[ 양호 ]</td><td class="border border-slate-300 p-1.5">밀림 없음 확인</td></tr>
+          <tr><td class="border border-slate-300 p-1.5 text-center">2</td><td class="border border-slate-300 p-1.5">하역장치(포크, 마스트, 체인) 균열 및 변형 유무</td><td class="border border-slate-300 p-1.5 text-center">[ 양호 ]</td><td class="border border-slate-300 p-1.5">체인 장력 정상</td></tr>
+          <tr><td class="border border-slate-300 p-1.5 text-center">3</td><td class="border border-slate-300 p-1.5">유압계통 오일 누유 여부 및 배터리 충전 상태</td><td class="border border-slate-300 p-1.5 text-center">[ 양호 ]</td><td class="border border-slate-300 p-1.5">누유 없음</td></tr>
+          <tr><td class="border border-slate-300 p-1.5 text-center">4</td><td class="border border-slate-300 p-1.5">전조등, 후미등, 경음기, 후진경보음 및 경광등 작동</td><td class="border border-slate-300 p-1.5 text-center">[ 양호 ]</td><td class="border border-slate-300 p-1.5">경보음 음량 적정</td></tr>
+          <tr><td class="border border-slate-300 p-1.5 text-center">5</td><td class="border border-slate-300 p-1.5">헤드가드, 백레스트 손상 유무 및 좌석 안전벨트</td><td class="border border-slate-300 p-1.5 text-center">[ 양호 ]</td><td class="border border-slate-300 p-1.5">벨트 체결 정상</td></tr>
+          <tr><td class="border border-slate-300 p-1.5 text-center">6</td><td class="border border-slate-300 p-1.5">타이어 손상, 균열 및 마모 상태</td><td class="border border-slate-300 p-1.5 text-center">[ 양호 ]</td><td class="border border-slate-300 p-1.5">공기압 적정</td></tr>
+        </table>
+      </div>
+    `
+  },
+  {
+    id: "form-hire-training",
+    category: "안전보건 교육",
+    title: "신규채용자 안전보건교육 일지 및 서명부",
+    format: "HWP / PDF",
+    lawRef: "산업안전보건법 제29조 (채용 시 8시간 교육)",
+    retention: "3년 보존",
+    cycle: "신규 입사자 발생 시 현장 투입 전",
+    desc: "신규 입사자 발생 즉시 8시간(일용직 1시간) 교육을 실시하고 노동부 감독 시 과태료를 방어하는 법정 필수 서식",
+    items: ["교육 일시 및 장소", "교육 강사 (안전관리자/관리감독자)", "교육 과목 (산안법, 설비 위험성, 비상대피)", "피교육자 명단 및 자필 서명"],
+    previewHtml: `
+      <div class="border border-slate-300 p-6 bg-white text-slate-800 font-sans text-xs space-y-4">
+        <div class="text-center border-b pb-3">
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">신규채용자 정기 안전보건교육 실시 결과보고서</h2>
+          <p class="text-[11px] text-slate-500 mt-1">산업안전보건법 제29조제2항 관련 (정규직·계약직 8시간 의무교육)</p>
+        </div>
+        <table class="w-full border-collapse border border-slate-300 text-center text-[11px]">
+          <tr class="bg-slate-100">
+            <th class="border border-slate-300 p-1.5 w-24">교육 일자</th><td class="border border-slate-300 p-1.5">2026년 &nbsp;&nbsp;월 &nbsp;&nbsp;일 ~ &nbsp;&nbsp;월 &nbsp;&nbsp;일 (총 8시간)</td>
+            <th class="border border-slate-300 p-1.5 w-24">교육 장소</th><td class="border border-slate-300 p-1.5">횡성 본사 교육실 / 현장실습</td>
+          </tr>
+          <tr>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">교육 실시자</th><td class="border border-slate-300 p-1.5">소속: 인적자원팀 &nbsp; 직위: 팀장/담당 &nbsp; 성명: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</td>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">교육 구분</th><td class="border border-slate-300 p-1.5">[v] 신규채용시 교육 (8시간)</td>
+          </tr>
+        </table>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">■ 주요 교육 내용</h4>
+          <table class="w-full border-collapse border border-slate-300 text-[11px]">
+            <tr class="bg-slate-100"><td class="border border-slate-300 p-1.5 w-24 font-bold text-center">교과목</td><td class="border border-slate-300 p-1.5 font-bold text-center">교육 세부 항목 (산안법 시행규칙 별표 4)</td><td class="border border-slate-300 p-1.5 w-16 text-center font-bold">시간</td></tr>
+            <tr><td class="border border-slate-300 p-1.5 text-center">기계·기구</td><td class="border border-slate-300 p-1.5">• 육가공 기계(컨베이어, 육절기, 혼합기, 포장기)의 위험성과 안전작업방법</td><td class="border border-slate-300 p-1.5 text-center">3시간</td></tr>
+            <tr><td class="border border-slate-300 p-1.5 text-center">물질안전보건</td><td class="border border-slate-300 p-1.5">• 소독세척제 등 화학물질 유해·위험성(MSDS) 및 취급 시 주의사항</td><td class="border border-slate-300 p-1.5 text-center">2시간</td></tr>
+            <tr><td class="border border-slate-300 p-1.5 text-center">보건관리</td><td class="border border-slate-300 p-1.5">• 중량물 취급 및 근골격계질환 예방, 소음작업장 방음보호구 착용법</td><td class="border border-slate-300 p-1.5 text-center">2시간</td></tr>
+            <tr><td class="border border-slate-300 p-1.5 text-center">비상조치</td><td class="border border-slate-300 p-1.5">• 화재 및 비상시 대피요령, 사업장 비상연락망 및 응급처치 요령</td><td class="border border-slate-300 p-1.5 text-center">1시간</td></tr>
+          </table>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "form-committee",
+    category: "회의체 & 협의체",
+    title: "산업안전보건위원회 분기 정기회의록",
+    format: "HWP / XLSX / PDF",
+    lawRef: "산업안전보건법 제24조",
+    retention: "2년 보존",
+    cycle: "매 분기 1회 이상 (연 4회)",
+    desc: "근로자 대표와 사용자 대표 동수 참석하여 안전보건 예산, 한파 대책, 현장 개선안을 의결하는 법정 공식 회의록",
+    items: ["일시 및 회의장소", "사용자위원 / 근로자위원 참석 서명부", "부의 안건 및 심의·의결 사항", "결정사항 이행 계획"],
+    previewHtml: `
+      <div class="border border-slate-300 p-6 bg-white text-slate-800 font-sans text-xs space-y-4">
+        <div class="text-center border-b pb-3">
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">2026년도 제 &nbsp; 분기 산업안전보건위원회 정기회의록</h2>
+          <p class="text-[11px] text-slate-500 mt-1">산업안전보건법 제24조 관련 / (주)케이프라이드 · (주)보담</p>
+        </div>
+        <table class="w-full border-collapse border border-slate-300 text-center text-[11px]">
+          <tr class="bg-slate-100">
+            <th class="border border-slate-300 p-1.5 w-24">회의 일시</th><td class="border border-slate-300 p-1.5">2026년 &nbsp;&nbsp;월 &nbsp;&nbsp;일 ( &nbsp; ) &nbsp;&nbsp;:&nbsp;&nbsp; ~ &nbsp;&nbsp;:&nbsp;&nbsp;</td>
+            <th class="border border-slate-300 p-1.5 w-24">회의 장소</th><td class="border border-slate-300 p-1.5">본사 2층 대회의실</td>
+          </tr>
+          <tr>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">위원장</th><td class="border border-slate-300 p-1.5">대표이사 김도영 (인)</td>
+            <th class="border border-slate-300 p-1.5 bg-slate-100">근로자대표</th><td class="border border-slate-300 p-1.5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</td>
+          </tr>
+        </table>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">■ 주요 심의 및 의결 안건</h4>
+          <div class="border border-slate-300 p-3 text-slate-700 bg-slate-50/50 space-y-2">
+            <p><strong>[제1호 안건] 동절기 한파 및 폭설 대비 현장 안전관리 조치 건</strong><br>
+            • 의결결과: 야외 상하차 작업장 온열쉼터 가동, 핫팩 및 방한장갑 전원 지급, 결빙구역 모래/염화칼슘 사전 비치 (원안 가결)</p>
+            <p><strong>[제2호 안건] 가공라인 컨베이어 방호가드 보강 및 정기점검의 건</strong><br>
+            • 의결결과: 공무팀 주관으로 전동 구동부 덮개 볼트 체결상태 전수 점검 및 개선 완료 (원안 가결)</p>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "form-accident",
+    category: "산재 및 사후관리",
+    title: "산업재해 발생경위서 및 재발방지대책서",
+    format: "HWP / XLSX / PDF",
+    lawRef: "산업안전보건법 제57조",
+    retention: "3년 보존",
+    cycle: "재해 발생 시 즉시",
+    desc: "사고 발생 즉시 6하 원칙에 따라 경위를 조사하고 재발방지대책을 수립하는 사내 공식 보고서",
+    items: ["재해자 인적사항 (성명, 입사일, 직무)", "사고 발생 일시 및 구체적 경위", "직접 원인 (불안전한 상태·행동)", "재발방지대책 및 조치 기한"],
+    previewHtml: `
+      <div class="border border-slate-300 p-6 bg-white text-slate-800 font-sans text-xs space-y-4">
+        <div class="text-center border-b pb-3">
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">산업재해 발생 경위서 및 재발방지 계획서</h2>
+          <p class="text-[11px] text-slate-500 mt-1">산업안전보건법 제57조 관련 / 대내외 보고용 표준 서식</p>
+        </div>
+        <table class="w-full border-collapse border border-slate-300 text-[11px]">
+          <tr class="bg-slate-100 text-center font-bold">
+            <td class="border border-slate-300 p-1.5 w-20">소속</td><td class="border border-slate-300 p-1.5">생산팀</td>
+            <td class="border border-slate-300 p-1.5 w-20">성명</td><td class="border border-slate-300 p-1.5">홍 길 동</td>
+            <td class="border border-slate-300 p-1.5 w-20">입사일자</td><td class="border border-slate-300 p-1.5">2025.03.10</td>
+          </tr>
+          <tr>
+            <td class="border border-slate-300 p-1.5 bg-slate-100 font-bold text-center">발생 일시</td>
+            <td colspan="2" class="border border-slate-300 p-1.5 text-center">2026년 &nbsp;&nbsp;월 &nbsp;&nbsp;일 &nbsp;&nbsp;시 &nbsp;&nbsp;분</td>
+            <td class="border border-slate-300 p-1.5 bg-slate-100 font-bold text-center">발생 장소</td>
+            <td colspan="2" class="border border-slate-300 p-1.5 text-center">횡성공장 1층 가공실</td>
+          </tr>
+        </table>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">■ 재해 발생 경위 (6하 원칙 상세 기술)</h4>
+          <div class="border border-slate-300 p-3 min-h-[50px] text-slate-600 bg-slate-50/50 leading-relaxed">
+            2026년 O월 O일 OO시경 가공실에서 원료육 박스를 해체하여 컨베이어로 투입하던 중, 바닥에 묻은 수분으로 인해 발이 미끄러지며 우측 발목을 접질림. 현장 응급처치 후 관내 정형외과로 후송하여 치료 조치함.
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1">■ 재발방지 대책</h4>
+          <div class="border border-slate-300 p-3 text-slate-700 bg-slate-50/50 space-y-1">
+            <p>1. [환경 개선] 원자재 해동라인 주변 트렌치 배수로 청소 및 논슬립 미끄럼방지 패드 전면 설치</p>
+            <p>2. [보호구] 전 작업자 위생화 밑창 마모상태 점검 및 미끄럼방지 1등급 안전화로 일괄 교체</p>
+            <p>3. [교육] 매일 아침 TBM 시 보행 중 뛰기 금지 및 이동 통로 수분 제거 지도</p>
+          </div>
+        </div>
+      </div>
+    `
+  }
+];
+
+window.SAFETY_TIPS_DATA.calendarEvents = SAFETY_CALENDAR_EVENTS;
+window.SAFETY_TIPS_DATA.safetyForms = SAFETY_FORMS_DATA;
+
+
