@@ -66,13 +66,22 @@
           <span class="text-[10px] bg-white/25 text-white px-2 py-0.5 rounded-full font-black animate-pulse">Copilot</span>
         </a>
 
-        <!-- 1. 대시보드 -->
-        <button onclick="switchPortalTab('dashboard')" id="nav-btn-dashboard" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white bg-sky-600 font-bold shadow-xs transition">
+        <!-- 1. 스마트 포털 홈 (시안 1: 메인 런처) -->
+        <button onclick="switchPortalTab('home')" id="nav-btn-home" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white bg-sky-600 font-bold shadow-xs transition">
           <div class="flex items-center gap-2.5">
-            <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-200"></i>
-            <span>종합 관제 대시보드</span>
+            <i data-lucide="home" class="w-4 h-4 text-sky-200"></i>
+            <span>스마트 포털 홈</span>
           </div>
-          <span class="text-[10px] bg-sky-700/80 text-white px-1.5 py-0.5 rounded font-bold">홈</span>
+          <span class="text-[10px] bg-sky-700/80 text-white px-1.5 py-0.5 rounded font-bold">메인</span>
+        </button>
+
+        <!-- 2. 설비 종합 관제 (2페이지로 분리) -->
+        <button onclick="switchPortalTab('dashboard')" id="nav-btn-dashboard" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="activity" class="w-4 h-4 text-sky-400"></i>
+            <span>설비 종합 관제</span>
+          </div>
+          <span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-1.5 py-0.5 rounded font-bold">2페이지</span>
         </button>
 
         <!-- 2. 안전보건관리체계 (절차·지침) -->
@@ -206,7 +215,7 @@
           <div class="flex items-center gap-2 text-xs text-slate-500">
             <span class="font-medium">안전보건 포털</span>
             <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
-            <span id="current-tab-title" class="font-bold text-slate-900 text-sm">종합 관제 대시보드</span>
+            <span id="current-tab-title" class="font-bold text-slate-900 text-sm">스마트 포털 홈</span>
           </div>
         </div>
 
@@ -230,9 +239,99 @@
       <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
         <!-- ============================================== -->
-        <!-- TAB 1: 종합 관제 대시보드 (#portal-view-dashboard) -->
+        <!-- TAB 0: 스마트 포털 홈 (시안 1: 초미니멀 런처) -->
         <!-- ============================================== -->
-        <div id="portal-view-dashboard" class="portal-tab-content space-y-6">
+        <div id="portal-view-home" class="portal-tab-content flex flex-col justify-center items-center py-6 sm:py-12 min-h-[calc(100vh-160px)]">
+          <div class="max-w-3xl w-full mx-auto space-y-8 text-center my-auto px-2">
+            
+            <!-- 1. D-1 긴급 알림 캡슐 뱃지 -->
+            <div class="inline-flex items-center gap-2.5 bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border border-rose-200/90 text-rose-800 px-5 py-2.5 rounded-full text-xs font-bold shadow-xs">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+              <span class="font-extrabold text-rose-700">D-1 심사 알림</span>
+              <span class="text-rose-300">|</span>
+              <span>내일(11월 10일 화) KOCI ISO 45001 2차 사후심사 수검 예정</span>
+              <button onclick="switchPortalTab('iso45001')" class="ml-1 text-[11px] underline font-extrabold text-rose-700 hover:text-rose-900 cursor-pointer">심사 대비 서류 →</button>
+            </div>
+
+            <!-- 2. 중앙 타이틀 및 부제 -->
+            <div class="space-y-2">
+              <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">산업안전보건 포털</h1>
+              <p class="text-xs sm:text-sm text-slate-500 font-medium">(주)케이프라이드 · (주)보담 스마트 안전관리 통합 시스템</p>
+              
+              <!-- 3대 요약 상태 뱃지 -->
+              <div class="pt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
+                <span class="px-3 py-1 rounded-full bg-white text-slate-600 font-semibold border border-slate-200 shadow-2xs">👥 전 사업장 324명</span>
+                <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 shadow-2xs">🛡️ 중대재해 Zero 지속</span>
+                <span class="px-3 py-1 rounded-full bg-sky-50 text-sky-700 font-semibold border border-sky-200 shadow-2xs">🟢 실시간 관제 정상 가동</span>
+              </div>
+            </div>
+
+            <!-- 3. 4대 핵심 업무 런처 (정사각형 큰 타일 버튼 4개) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 pt-3">
+              
+              <!-- 타일 1: 법정 서류 서고 -->
+              <button onclick="switchPortalTab('forms')" class="group p-6 bg-white rounded-3xl border border-slate-200/90 hover:border-indigo-500 hover:shadow-xl transition-all duration-200 flex flex-col items-center justify-center space-y-3.5 text-center shadow-xs cursor-pointer">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-200">
+                  <i data-lucide="folder-down" class="w-7 h-7"></i>
+                </div>
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900 group-hover:text-indigo-600 transition">법정 서류 서고</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">8대 핵심 증빙 & 서식</div>
+                </div>
+                <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-bold">서류 열람 →</span>
+              </button>
+
+              <!-- 타일 2: 설비 안전 관제 (2페이지 이동) -->
+              <button onclick="switchPortalTab('dashboard')" class="group p-6 bg-white rounded-3xl border border-slate-200/90 hover:border-sky-500 hover:shadow-xl transition-all duration-200 flex flex-col items-center justify-center space-y-3.5 text-center shadow-xs cursor-pointer">
+                <div class="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-200">
+                  <i data-lucide="activity" class="w-7 h-7"></i>
+                </div>
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900 group-hover:text-sky-600 transition">설비 종합 관제</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">지게차·국소배기 D-Day</div>
+                </div>
+                <span class="text-[10px] bg-sky-50 text-sky-700 px-2.5 py-1 rounded-full font-bold">2페이지 이동 →</span>
+              </button>
+
+              <!-- 타일 3: ISO 45001 경영센터 -->
+              <button onclick="switchPortalTab('iso45001')" class="group p-6 bg-white rounded-3xl border border-slate-200/90 hover:border-amber-500 hover:shadow-xl transition-all duration-200 flex flex-col items-center justify-center space-y-3.5 text-center shadow-xs cursor-pointer">
+                <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition duration-200">
+                  <i data-lucide="award" class="w-7 h-7"></i>
+                </div>
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900 group-hover:text-amber-600 transition">ISO 45001 센터</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">사후심사 & 24종 규정</div>
+                </div>
+                <span class="text-[10px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full font-bold">심사 대비 →</span>
+              </button>
+
+              <!-- 타일 4: 법정 안전 캘린더 -->
+              <button onclick="switchPortalTab('calendar')" class="group p-6 bg-white rounded-3xl border border-slate-200/90 hover:border-emerald-500 hover:shadow-xl transition-all duration-200 flex flex-col items-center justify-center space-y-3.5 text-center shadow-xs cursor-pointer">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition duration-200">
+                  <i data-lucide="calendar" class="w-7 h-7"></i>
+                </div>
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900 group-hover:text-emerald-600 transition">법정 캘린더</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">11·12월 의무 점검</div>
+                </div>
+                <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-bold">일정 확인 →</span>
+              </button>
+
+            </div>
+
+            <!-- 4. 하단 미니 가이드 -->
+            <div class="pt-4 text-slate-400 text-xs flex items-center justify-center gap-2">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>설비별 세부 D-Day 및 실시간 모니터링은 <button onclick="switchPortalTab('dashboard')" class="text-sky-600 font-bold underline cursor-pointer hover:text-sky-800">2. 설비 종합 관제</button> 탭에서 확인하실 수 있습니다.</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 1: 종합 관제 대시보드 (#portal-view-dashboard - 2페이지 분리) -->
+        <!-- ============================================== -->
+        <div id="portal-view-dashboard" class="portal-tab-content hidden space-y-6">
           
           <!-- KPI 핵심 요약 카드 그리드 -->
           <section class="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -1403,15 +1403,16 @@ function closeIsoModal() {
 // ==========================================
 // 8. 포털 탭 전환 및 사이드바 내비게이션 (Portal Navigation)
 // ==========================================
-let currentPortalTab = 'dashboard';
+let currentPortalTab = 'home';
 
 const PORTAL_TAB_TITLES = {
-  dashboard: '종합 관제 대시보드',
+  home: '스마트 포털 홈',
+  dashboard: '설비 종합 관제 대시보드 (2페이지)',
   systemDocs: '안전보건관리체계 (절차서 · 지침서)',
   calendar: '월간 법정 안전 캘린더',
   checklist: '주기별 점검 & TBM 체크리스트',
   iso45001: 'ISO 45001 경영센터',
-  forms: '법정 서식 & 일지 다운로드 허브'
+  forms: '법정 서식 & 핵심 법정 증빙 서고'
 };
 
 function switchPortalTab(tabId) {
@@ -1424,7 +1425,7 @@ function switchPortalTab(tabId) {
   }
 
   // 2. 뷰 컨테이너 토글
-  const views = ["dashboard", "systemDocs", "calendar", "checklist", "iso45001", "forms"];
+  const views = ["home", "dashboard", "systemDocs", "calendar", "checklist", "iso45001", "forms"];
   views.forEach(v => {
     const el = document.getElementById(`portal-view-${v}`);
     if (el) {
