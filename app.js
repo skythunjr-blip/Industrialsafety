@@ -1415,8 +1415,19 @@ const PORTAL_TAB_TITLES = {
   forms: '법정 서식 & 핵심 법정 증빙 서고'
 };
 
+function enterPortal(targetTab = 'dashboard') {
+  switchPortalTab(targetTab);
+}
+
 function switchPortalTab(tabId) {
   currentPortalTab = tabId;
+
+  // 0. 게이트웨이(홈) 모드 토글: 홈일 때 사이드바/헤더 숨김, 입장 시 노출
+  if (tabId === 'home') {
+    document.body.classList.add('gateway-mode');
+  } else {
+    document.body.classList.remove('gateway-mode');
+  }
 
   // 1. 브레드크럼 타이틀 갱신
   const titleEl = document.getElementById("current-tab-title");
