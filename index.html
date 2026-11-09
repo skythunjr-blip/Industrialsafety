@@ -100,13 +100,13 @@
           <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">~2027</span>
         </button>
 
-        <!-- 5. 법정 서식 & 일지 다운로드 (Option 1) -->
+        <!-- 5. 법정 서식 & 핵심 법정 증빙 서고 -->
         <button onclick="switchPortalTab('forms')" id="nav-btn-forms" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
           <div class="flex items-center gap-2.5">
             <i data-lucide="folder-down" class="w-4 h-4 text-indigo-400"></i>
-            <span>법정 서식 자료실</span>
+            <span>법정 서식 & 핵심 증빙</span>
           </div>
-          <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">서식 5종</span>
+          <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">서식 & 증빙</span>
         </button>
 
         <div class="pt-4 px-3 pb-1 text-[10px] font-bold text-slate-400 tracking-wider">현황 통계 & 가이드 북</div>
@@ -644,31 +644,74 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- TAB 5: 법정 서식 및 일지 다운로드 허브 (#portal-view-forms) - Option 1! -->
+        <!-- TAB 5: 법정 서식 및 핵심 법정 증빙 서고 (#portal-view-forms) -->
         <!-- ============================================== -->
         <div id="portal-view-forms" class="portal-tab-content hidden space-y-6">
           <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-6">
             
-            <!-- 서식 자료실 헤더 -->
+            <!-- 서식 & 증빙 헤더 및 서브 탭 전환 -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
               <div>
                 <div class="flex items-center gap-2">
                   <span class="p-2 rounded-xl bg-indigo-50 text-indigo-600 font-bold"><i data-lucide="folder-down" class="w-5 h-5"></i></span>
-                  <h2 class="text-base font-bold text-slate-900">법정 필수 안전보건 서식 & 일지 다운로드 센터</h2>
+                  <h2 class="text-base font-bold text-slate-900">법정 필수 서식 및 핵심 법정 증빙 서고</h2>
                 </div>
-                <p class="text-xs text-slate-500 mt-1">현장에서 즉시 출력·작성 가능한 표준 A4 양식 및 텍스트 템플릿 제공</p>
+                <p class="text-xs text-slate-500 mt-1">표준 A4 서식 출력 및 관공서·인증원 심사 대비 8대 핵심 증빙 서류 상시 열람</p>
               </div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold border border-slate-200">
-                  총 5종 법정 서식 구비
-                </span>
+              
+              <!-- 서브 탭 전환 버튼 -->
+              <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold gap-1">
+                <button onclick="switchFormsSubTab('forms')" id="subtab-btn-forms" class="px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs font-bold transition">
+                  법정 표준 서식 (5종)
+                </button>
+                <button onclick="switchFormsSubTab('evidence')" id="subtab-btn-evidence" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+                  <span>핵심 법정 증빙 (8대 항목)</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                </button>
               </div>
             </div>
 
-            <!-- 서식 카드 목록 그리드 -->
-            <div id="forms-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <!-- JS 동적 렌더링 -->
+            <!-- 1) 기존 표준 서식 5종 서브뷰 -->
+            <div id="forms-subview-templates" class="space-y-4">
+              <div id="forms-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- JS 동적 렌더링 -->
+              </div>
             </div>
+
+            <!-- 2) 신규 핵심 법정 증빙 서고 서브뷰 -->
+            <div id="forms-subview-evidence" class="hidden space-y-5">
+              <!-- 법정 서류 보존 체계 안내 배너 -->
+              <div class="p-4 rounded-xl bg-gradient-to-r from-slate-50 to-indigo-50/40 border border-slate-200/90 text-xs text-slate-700 leading-relaxed flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-start gap-3">
+                  <div class="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0 font-bold">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-900 text-xs mb-1 flex items-center gap-2">
+                      <span>법정 증빙 서류 체계적 보존 관리 현황</span>
+                      <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">2026.11 실시간</span>
+                    </div>
+                    <div class="text-[11px] text-slate-600 space-y-0.5">
+                      <p>• <b>구형 서류 분리:</b> 보존연한 만료(2021년 이전) 1,551건은 <code class="px-1 py-0.5 bg-slate-200 rounded text-slate-800 text-[10px]">99_보존연한만료_구형서류(2021년이전)</code> 폴더로 안전 이관 완료.</p>
+                      <p>• <b>일상 서류 보류:</b> 일상 점검·서명부 등 3,150여 건의 대용량 실무 파일은 현업 운영상 로컬 보관으로 보류 유지.</p>
+                      <p>• <b>핵심 증빙 탑재:</b> 관공서 정기감독, 시정명령 및 ISO 45001 심사 시 필수 요구되는 8대 핵심 서류를 포털에 탑재하여 상시 소명 지원.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="shrink-0 flex items-center gap-2">
+                  <span class="text-[11px] px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold flex items-center gap-1.5 shadow-2xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>8대 핵심 증빙 등록완료</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- 핵심 증빙 카드 목록 그리드 -->
+              <div id="evidence-grid-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- JS 동적 렌더링 -->
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -882,5 +925,28 @@
   <script src="supabaseClient.js"></script>
   <script src="safetyTipsData.js"></script>
   <script src="app.js"></script>
+  <!-- 핵심 법정 증빙 상세 및 소명 모달 -->
+  <div id="evidence-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-indigo-100 text-indigo-700 font-bold"><i data-lucide="file-check" class="w-4 h-4"></i></span>
+          <h3 id="evidence-modal-title" class="font-bold text-base text-slate-900">법정 증빙 상세 정보</h3>
+        </div>
+        <button onclick="closeEvidenceDetail()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4 text-xs" id="evidence-modal-body">
+        <!-- 동적 렌더링 -->
+      </div>
+      <div class="p-4 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50">
+        <button onclick="closeEvidenceDetail()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

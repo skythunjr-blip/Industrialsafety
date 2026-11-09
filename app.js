@@ -1705,6 +1705,7 @@ function renderCalendarDetail(dateStr, corpEvents) {
 let currentPreviewForm = null;
 
 function renderFormsHub() {
+  renderStatutoryEvidence();
   const container = document.getElementById("forms-grid-container");
   if (!container) return;
 
@@ -1818,6 +1819,192 @@ ${form.items.map((it, idx) => `${idx + 1}. ${it}`).join("\n")}
 }
 
 // ==============================================
+
+// ==============================================
+// 8-1. 서식 & 핵심 법정 증빙 서브탭 전환 및 렌더링
+// ==============================================
+let currentFormsSubTab = 'forms'; // 'forms' | 'evidence'
+
+function switchFormsSubTab(subTab) {
+  currentFormsSubTab = subTab;
+  const viewTemplates = document.getElementById("forms-subview-templates");
+  const viewEvidence = document.getElementById("forms-subview-evidence");
+  const btnForms = document.getElementById("subtab-btn-forms");
+  const btnEvidence = document.getElementById("subtab-btn-evidence");
+
+  if (subTab === 'forms') {
+    if (viewTemplates) viewTemplates.classList.remove("hidden");
+    if (viewEvidence) viewEvidence.classList.add("hidden");
+    if (btnForms) {
+      btnForms.className = "px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-xs font-bold transition";
+    }
+    if (btnEvidence) {
+      btnEvidence.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5";
+    }
+  } else {
+    if (viewTemplates) viewTemplates.classList.add("hidden");
+    if (viewEvidence) viewEvidence.classList.remove("hidden");
+    if (btnForms) {
+      btnForms.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+    }
+    if (btnEvidence) {
+      btnEvidence.className = "px-3 py-1.5 rounded-lg bg-white text-emerald-700 shadow-xs font-bold transition flex items-center gap-1.5";
+    }
+    renderStatutoryEvidence();
+  }
+  lucide.createIcons();
+}
+
+function renderStatutoryEvidence() {
+  const container = document.getElementById("evidence-grid-container");
+  if (!container) return;
+
+  const list = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.statutoryEvidence) || [];
+  if (!list.length) {
+    container.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400">등록된 핵심 법정 증빙 데이터가 없습니다.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(ev => `
+    <div class="p-5 rounded-2xl border border-slate-200 bg-white hover:border-emerald-300 hover:shadow-md transition flex flex-col justify-between space-y-4">
+      <div class="space-y-3">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+              ${escapeHtml(ev.category)}
+            </span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+              ${escapeHtml(ev.retentionBadge)}
+            </span>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
+            ${escapeHtml(ev.targetYear)}
+          </span>
+        </div>
+
+        <div>
+          <h3 class="font-extrabold text-sm text-slate-900 leading-snug">${escapeHtml(ev.title)}</h3>
+          <p class="text-xs text-slate-600 mt-1 leading-relaxed">${escapeHtml(ev.summary)}</p>
+        </div>
+
+        <div class="flex items-center gap-2 text-[10px] text-slate-500 flex-wrap">
+          <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200 font-medium">⚖️ ${escapeHtml(ev.lawRef)}</span>
+          <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-200 font-medium">🏢 대상: ${escapeHtml(ev.corps.join(", "))}</span>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100">
+          <div class="text-[11px] font-bold text-slate-800 mb-1.5 flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span>감독관 점검 & 심사 소명 핵심 포인트:</span>
+          </div>
+          <ul class="text-[11px] text-slate-600 space-y-1 pl-1">
+            ${ev.auditCheckpoints.map(cp => `
+              <li class="flex items-start gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1"></span>
+                <span>${escapeHtml(cp)}</span>
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-mono text-slate-600 break-all">
+          <div class="text-[10px] font-sans font-bold text-slate-400 mb-0.5">실물 보관 경로 (로컬 프로젝트 서고):</div>
+          <span>[정리본]_산업안전관리체계/${escapeHtml(ev.filePath)}</span>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
+        <button onclick="openEvidenceDetail('${ev.id}')" 
+          class="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs">
+          <i data-lucide="file-search" class="w-3.5 h-3.5"></i>
+          <span>증빙 상세 & 소명 지침</span>
+        </button>
+        <button onclick="copyEvidencePath('${escapeHtml(ev.filePath)}')" 
+          class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition" title="보관 폴더 경로 복사">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  `).join("");
+
+  lucide.createIcons();
+}
+
+function openEvidenceDetail(evidenceId) {
+  const list = (window.SAFETY_TIPS_DATA && window.SAFETY_TIPS_DATA.statutoryEvidence) || [];
+  const ev = list.find(e => e.id === evidenceId);
+  if (!ev) return;
+
+  const modal = document.getElementById("evidence-detail-modal");
+  const titleEl = document.getElementById("evidence-modal-title");
+  const bodyEl = document.getElementById("evidence-modal-body");
+
+  if (titleEl) titleEl.textContent = `${ev.title}`;
+
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+          <div><span class="text-slate-400">관리 코드:</span> <span class="font-bold text-slate-800">${escapeHtml(ev.code)}</span></div>
+          <div><span class="text-slate-400">법적 근거:</span> <span class="font-bold text-slate-800">${escapeHtml(ev.lawRef)}</span></div>
+          <div><span class="text-slate-400">법정 보존연한:</span> <span class="font-bold text-emerald-700">${escapeHtml(ev.retention)}</span></div>
+          <div><span class="text-slate-400">소속 법인:</span> <span class="font-bold text-slate-800">${escapeHtml(ev.corps.join(", "))}</span></div>
+        </div>
+
+        <div>
+          <div class="font-bold text-slate-900 mb-1">■ 서류 개요 및 보존 취지:</div>
+          <p class="text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">${escapeHtml(ev.summary)}</p>
+        </div>
+
+        <div>
+          <div class="font-bold text-slate-900 mb-1.5">■ 근로감독관 점검 및 외부 심사 소명 체크리스트:</div>
+          <ul class="space-y-1.5 pl-1">
+            ${ev.auditCheckpoints.map(cp => `
+              <li class="flex items-start gap-2 bg-emerald-50/60 p-2.5 rounded-lg border border-emerald-100 text-slate-700">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                <span class="leading-relaxed font-medium">${escapeHtml(cp)}</span>
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+
+        <div>
+          <div class="font-bold text-slate-900 mb-1.5">■ 실물 보관 위치 및 대표 증빙 파일:</div>
+          <div class="p-3 bg-slate-900 text-slate-200 rounded-xl font-mono text-[11px] space-y-1.5">
+            <div class="text-emerald-400 font-sans font-bold text-xs">디렉토리 경로:</div>
+            <div class="break-all text-slate-300">/Users/labor01/Desktop/산업안전/[정리본]_산업안전관리체계/${escapeHtml(ev.filePath)}</div>
+            <div class="pt-2 border-t border-slate-800 text-slate-400 font-sans font-bold text-xs">포함된 주요 파일:</div>
+            <ul class="space-y-0.5 pl-2 text-slate-300 font-mono text-[11px]">
+              ${ev.sampleFiles.map(sf => `<li>• ${escapeHtml(sf)}</li>`).join("")}
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (modal) modal.classList.remove("hidden");
+  lucide.createIcons();
+}
+
+function closeEvidenceDetail() {
+  const modal = document.getElementById("evidence-detail-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function copyEvidencePath(filePath) {
+  const fullPath = `/Users/labor01/Desktop/산업안전/[정리본]_산업안전관리체계/${filePath}`;
+  navigator.clipboard.writeText(fullPath).then(() => {
+    alert(`보관 경로가 클립보드에 복사되었습니다:
+${fullPath}
+
+Finder에서 해당 경로를 확인하실 수 있습니다.`);
+  }).catch(() => {
+    alert(`보관 경로:
+${fullPath}`);
+  });
+}
+
 // 9. 안전보건관리체계 (절차서 · 지침서 규정 라이브러리)
 // ==============================================
 let currentSystemDocsFilter = 'all'; // 'all' | '절차서' | '지침서'
