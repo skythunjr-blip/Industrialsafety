@@ -38,7 +38,7 @@
     <!-- ============================================== -->
     <!-- 1. 좌측 메인 포털 사이드바 (Sidebar) -->
     <!-- ============================================== -->
-    <aside id="portal-sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-40 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800/90 shadow-xl">
+    <aside id="portal-sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 transition-transform duration-300 z-50 fixed inset-y-0 left-0 -translate-x-full md:hidden border-r border-slate-800/90 shadow-2xl">
       
       <!-- 상단 포털 브랜드 로고 -->
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
@@ -72,14 +72,7 @@
           <span class="text-[10px] bg-white/25 text-white px-2 py-0.5 rounded-full font-black animate-pulse">Copilot</span>
         </a>
 
-        <!-- 1. 홈 게이트웨이로 나가기 -->
-        <button onclick="switchPortalTab('home')" id="nav-btn-home" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
-          <div class="flex items-center gap-2.5">
-            <i data-lucide="log-out" class="w-4 h-4 text-slate-400"></i>
-            <span>메인 게이트웨이 (홈)</span>
-          </div>
-          <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">홈으로</span>
-        </button>
+
 
         <!-- 2. 설비 종합 관제 (2페이지로 분리) -->
         <button onclick="switchPortalTab('dashboard')" id="nav-btn-dashboard" class="portal-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
@@ -210,35 +203,170 @@
       </div>
 
       <!-- 상단 내비게이션 바 & 사업장 필터 -->
-      <header id="portal-header" class="bg-white border-b border-slate-200/90 px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0 z-10 shadow-2xs">
-        <div class="flex items-center gap-3">
-          <!-- 모바일 햄버거 메뉴 버튼 -->
+      <!-- 상단 가로 통합 내비게이션 바 (Top GNB with 마우스 호버 드롭다운) -->
+      <header id="portal-header" class="bg-white border-b border-slate-200/90 px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0 z-30 shadow-2xs">
+        
+        <!-- 좌측: 로고 & 시스템 타이틀 -->
+        <div class="flex items-center gap-3 shrink-0">
+          <!-- 모바일 햄버거 버튼 (모바일 전용) -->
           <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-1.5 rounded-lg hover:bg-slate-100">
             <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
           
-          <!-- 브레드크럼 위치 표시 -->
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <span class="font-medium">안전보건 포털</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
-            <span id="current-tab-title" class="font-bold text-slate-900 text-sm">스마트 포털 홈</span>
+          <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchPortalTab('dashboard')">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-600 via-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-sm">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900 tracking-tight leading-none flex items-center gap-1.5">
+                <span>산업안전보건 포털</span>
+              </div>
+              <div class="text-[9px] text-slate-400 font-medium leading-none mt-1">(주)케이프라이드 · (주)보담</div>
+            </div>
           </div>
         </div>
 
-        <!-- 우측 액션: 사업장 필터 + 새로고침 -->
+        <!-- 중앙: 3대 가로 묶음 메뉴 (마우스 올리면 아래로 좌라락 나오는 호버 드롭다운) -->
+        <nav class="hidden md:flex items-center gap-1.5">
+          
+          <!-- 1. 현장 관제 & 점검 그룹 -->
+          <div class="relative group">
+            <button class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-700 hover:text-sky-600 hover:bg-slate-100 font-bold text-xs transition">
+              <i data-lucide="activity" class="w-4 h-4 text-sky-600"></i>
+              <span>현장 관제 & 점검</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 group-hover:rotate-180 transition-transform duration-200"></i>
+            </button>
+            <div class="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 min-w-[240px]">
+              <div class="bg-white rounded-2xl shadow-xl border border-slate-200/90 p-1.5 space-y-0.5">
+                <button onclick="switchPortalTab('dashboard')" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-sky-50 text-slate-700 hover:text-sky-700 transition">
+                  <span class="p-2 rounded-lg bg-sky-100 text-sky-700"><i data-lucide="gauge" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">설비 종합 관제</div>
+                    <div class="text-[10px] text-slate-400 font-normal">지게차·국소배기 실시간 D-Day</div>
+                  </div>
+                </button>
+                <button onclick="switchPortalTab('checklist')" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-sky-50 text-slate-700 hover:text-sky-700 transition">
+                  <span class="p-2 rounded-lg bg-sky-100 text-sky-700"><i data-lucide="check-square" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">주기별 점검 & TBM</div>
+                    <div class="text-[10px] text-slate-400 font-normal">일일~연간 안전 점검표</div>
+                  </div>
+                </button>
+                <button onclick="switchPortalTab('calendar')" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-sky-50 text-slate-700 hover:text-sky-700 transition">
+                  <span class="p-2 rounded-lg bg-emerald-100 text-emerald-700"><i data-lucide="calendar" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">법정 안전 캘린더</div>
+                    <div class="text-[10px] text-slate-400 font-normal">11·12월 주요 법정 의무 일정</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 법정 서고 & 규정 그룹 -->
+          <div class="relative group">
+            <button class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-700 hover:text-indigo-600 hover:bg-slate-100 font-bold text-xs transition">
+              <i data-lucide="folder-down" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>법정 서고 & 규정</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 group-hover:rotate-180 transition-transform duration-200"></i>
+            </button>
+            <div class="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 min-w-[260px]">
+              <div class="bg-white rounded-2xl shadow-xl border border-slate-200/90 p-1.5 space-y-0.5">
+                <button onclick="switchPortalTab('forms'); switchFormsSubTab('evidence');" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 transition">
+                  <span class="p-2 rounded-lg bg-emerald-100 text-emerald-700"><i data-lucide="file-check" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">핵심 법정 증빙 서고</div>
+                    <div class="text-[10px] text-slate-400 font-normal">위험성평가·산안위 등 8대 증빙</div>
+                  </div>
+                </button>
+                <button onclick="switchPortalTab('forms'); switchFormsSubTab('forms');" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 transition">
+                  <span class="p-2 rounded-lg bg-indigo-100 text-indigo-700"><i data-lucide="printer" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">법정 표준 서식 5종</div>
+                    <div class="text-[10px] text-slate-400 font-normal">A4 즉시 출력 및 양식 복사</div>
+                  </div>
+                </button>
+                <button onclick="switchPortalTab('iso45001')" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 transition">
+                  <span class="p-2 rounded-lg bg-amber-100 text-amber-700"><i data-lucide="award" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">ISO 45001 경영센터</div>
+                    <div class="text-[10px] text-slate-400 font-normal">2차 사후심사 & 인증서 관리</div>
+                  </div>
+                </button>
+                <button onclick="switchPortalTab('systemDocs')" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 transition">
+                  <span class="p-2 rounded-lg bg-slate-100 text-slate-700"><i data-lucide="book-open" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">안전보건관리체계 규정집</div>
+                    <div class="text-[10px] text-slate-400 font-normal">24종 절차서 및 지침서</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 가이드 & 통계 그룹 -->
+          <div class="relative group">
+            <button class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-700 hover:text-purple-600 hover:bg-slate-100 font-bold text-xs transition">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-purple-600"></i>
+              <span>가이드 & 통계</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 group-hover:rotate-180 transition-transform duration-200"></i>
+            </button>
+            <div class="absolute left-0 top-full pt-1.5 hidden group-hover:block z-50 min-w-[220px]">
+              <div class="bg-white rounded-2xl shadow-xl border border-slate-200/90 p-1.5 space-y-0.5">
+                <button onclick="openRosterModal()" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-purple-50 text-slate-700 hover:text-purple-700 transition">
+                  <span class="p-2 rounded-lg bg-purple-100 text-purple-700"><i data-lucide="users" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">사원 인력 통계</div>
+                    <div class="text-[10px] text-slate-400 font-normal">324명 비식별 인력 현황</div>
+                  </div>
+                </button>
+                <button onclick="openLawModal()" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-purple-50 text-slate-700 hover:text-purple-700 transition">
+                  <span class="p-2 rounded-lg bg-amber-100 text-amber-700"><i data-lucide="scale" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">2025·2026 법령 변동</div>
+                    <div class="text-[10px] text-slate-400 font-normal">산안법 주요 개정 사항</div>
+                  </div>
+                </button>
+                <button onclick="openTipsModal()" class="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left hover:bg-purple-50 text-slate-700 hover:text-purple-700 transition">
+                  <span class="p-2 rounded-lg bg-yellow-100 text-yellow-700"><i data-lucide="lightbulb" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="font-bold text-xs">초보 실무 팁 북</div>
+                    <div class="text-[10px] text-slate-400 font-normal">담당자 필수 체크포인트</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </nav>
+
+        <!-- 우측 액션: 사업장 필터 + AI 코파일럿 + 새로고침 + 관리자 -->
         <div class="flex items-center gap-2 sm:gap-3">
-          <!-- 법인별 필터 탭 (케이펙 제외, 케이프라이드 · 보담 2개 사 중심) -->
+          
+          <!-- 법인별 필터 버튼 -->
           <div class="flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-semibold">
-            <button onclick="setCompanyFilter('all')" id="btn-corp-all" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-white bg-slate-900 shadow-2xs transition">전체 사업장</button>
+            <button onclick="setCompanyFilter('all')" id="btn-corp-all" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-white bg-slate-900 shadow-2xs transition">전체</button>
             <button onclick="setCompanyFilter('케이프라이드')" id="btn-corp-kpride" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-slate-600 hover:text-slate-900 transition">케이프라이드</button>
             <button onclick="setCompanyFilter('보담')" id="btn-corp-bodam" class="corp-filter-btn px-2.5 sm:px-3 py-1 rounded-md text-slate-600 hover:text-slate-900 transition">보담</button>
           </div>
+
+          <!-- AI 안전 비서 (Copilot) -->
+          <a href="copilot.html" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-xs shadow-xs transition">
+            <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+            <span>AI 비서</span>
+          </a>
 
           <!-- 새로고침 버튼 -->
           <button onclick="refreshDashboard()" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition border border-slate-200" title="실시간 새로고침">
             <i data-lucide="rotate-cw" class="w-4 h-4"></i>
           </button>
+
+          <!-- 관리자 버튼 -->
+          <a href="admin.html" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition border border-slate-200" title="관리자 페이지">
+            <i data-lucide="settings" class="w-4 h-4 text-sky-600"></i>
+          </a>
         </div>
+
       </header>
 
       <!-- 스크롤 가능한 메인 뷰 컨테이너 (각 탭별 화면 전환) -->
